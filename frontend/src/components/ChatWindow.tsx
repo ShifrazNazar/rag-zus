@@ -5,6 +5,7 @@ import { useChat } from "../hooks/useChat";
 import MessageList from "./MessageList";
 import InputComposer from "./InputComposer";
 import QuickActions from "./QuickActions";
+import BackendStatus from "./BackendStatus";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Card, CardHeader, CardTitle, CardDescription } from "./ui/card";
 import { AlertCircle, RefreshCw } from "lucide-react";
@@ -36,6 +37,7 @@ export default function ChatWindow() {
             Multi-agent chatbot with RAG, Text2SQL, and tool calling
           </CardDescription>
         </CardHeader>
+        <BackendStatus />
       </Card>
 
       {/* Quick Actions */}
