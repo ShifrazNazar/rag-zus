@@ -12,6 +12,7 @@ openai==1.54.0
 # Vector store and embeddings
 faiss-cpu==1.8.0.post1
 sentence-transformers==3.0.1
+numpy==1.26.4
 
 # Database
 sqlalchemy==2.0.36

@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import logging
 
-from routers import calculator
+from routers import calculator, products
 
 # Configure logging
 logging.basicConfig(
@@ -33,6 +33,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(calculator.router)
+app.include_router(products.router)
 
 
 @app.get("/")
