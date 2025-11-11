@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import logging
 
-from routers import calculator, products, outlets
+from routers import calculator, products, outlets, chat
 from models.database import init_db
 
 # Configure logging
@@ -39,6 +39,7 @@ init_db()
 app.include_router(calculator.router)
 app.include_router(products.router)
 app.include_router(outlets.router)
+app.include_router(chat.router)
 
 
 @app.get("/")
