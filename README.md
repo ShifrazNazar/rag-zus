@@ -96,8 +96,11 @@ Once the backend is running, visit:
 Create `backend/.env`:
 
 ```env
-OPENAI_API_KEY=your_openai_api_key_here
+# Google Gemini API Key (required)
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
+
+**Note**: Get your Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey).
 
 ### Frontend
 
@@ -111,10 +114,57 @@ VITE_API_URL=http://localhost:8000
 
 - [Backend README](backend/README.md)
 - [Frontend README](frontend/README.md)
+- [Architecture Overview](docs/ARCHITECTURE.md) - System architecture and key trade-offs
+- [Agentic Planning](docs/AGENTIC_PLANNING.md) - Decision points and planning logic
+- [Example Transcripts](docs/EXAMPLE_TRANSCRIPTS.md) - Example conversations and test scenarios
+- [Error Handling Strategy](docs/ERROR_HANDLING_STRATEGY.md) - Security and error handling approach
+
+## 🏗️ Architecture Overview
+
+The system follows a multi-agent architecture with the following key components:
+
+- **Agent Planner**: Intent classification and action selection using LLM (Google Gemini)
+- **Memory Manager**: Conversation state tracking across multiple turns
+- **RAG Service**: FAISS-based semantic search for products
+- **Text2SQL Service**: Natural language to SQL conversion for outlet queries
+- **Tool Executor**: Wrapper for tool calls with error handling, timeouts, and circuit breakers
+
+**Key Trade-offs**:
+
+- **FAISS over Pinecone**: Local-first, no API costs, sufficient for <10k docs
+- **SQLite over PostgreSQL**: Simpler setup, read-heavy workload, easy to bundle
+- **In-Memory State**: Fast access, but not suitable for multi-instance deployment
+- **Sequential Tool Execution**: Simpler error handling, predictable behavior
+
+See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed architecture documentation.
+
+## 📋 Requirements Coverage
+
+All assessment requirements have been completed:
+
+- ✅ **Part 1**: Sequential Conversation (multi-turn tracking)
+- ✅ **Part 2**: Agentic Planning (intent parsing, action selection)
+- ✅ **Part 3**: Tool Calling (calculator with error handling)
+- ✅ **Part 4**: Custom API & RAG Integration (products, outlets)
+- ✅ **Part 5**: Unhappy Flows (missing params, downtime, malicious input)
+- ✅ **Part 6**: Frontend Chat UI (React, no Streamlit/Gradio)
+
+See [REQUIREMENTS_CHECKLIST.md](docs/REQUIREMENTS_CHECKLIST.md) for detailed verification.
 
 ## 🚢 Deployment
 
 - **Backend**: Deploy to Railway/Render
 - **Frontend**: Deploy to Vercel
+
+### Docker Deployment
+
+```bash
+# Using Docker Compose
+docker-compose up
+
+# Or build individually
+cd backend && docker build -t mindhive-backend .
+cd frontend && docker build -t mindhive-frontend .
+```
 
 See individual README files for deployment instructions.

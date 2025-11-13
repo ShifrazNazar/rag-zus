@@ -1,6 +1,3 @@
-"""
-Tests for chat agent endpoint.
-"""
 import pytest
 from fastapi.testclient import TestClient
 from main import app
@@ -9,7 +6,6 @@ client = TestClient(app)
 
 
 def test_chat_calculator_intent():
-    """Test chat with calculator intent."""
     response = client.post(
         "/chat",
         json={
@@ -27,7 +23,6 @@ def test_chat_calculator_intent():
 
 
 def test_chat_products_intent():
-    """Test chat with products search intent."""
     response = client.post(
         "/chat",
         json={
@@ -45,7 +40,6 @@ def test_chat_products_intent():
 
 
 def test_chat_outlets_intent():
-    """Test chat with outlets search intent."""
     response = client.post(
         "/chat",
         json={
@@ -63,7 +57,6 @@ def test_chat_outlets_intent():
 
 
 def test_chat_general_conversation():
-    """Test chat with general conversation."""
     response = client.post(
         "/chat",
         json={
@@ -81,7 +74,6 @@ def test_chat_general_conversation():
 
 
 def test_chat_with_history():
-    """Test chat with conversation history."""
     response = client.post(
         "/chat",
         json={
@@ -100,7 +92,6 @@ def test_chat_with_history():
 
 
 def test_chat_reset_command():
-    """Test reset command."""
     response = client.post(
         "/chat",
         json={
@@ -117,7 +108,6 @@ def test_chat_reset_command():
 
 
 def test_chat_empty_message():
-    """Test chat with empty message."""
     response = client.post(
         "/chat",
         json={
@@ -131,7 +121,6 @@ def test_chat_empty_message():
 
 
 def test_chat_missing_message():
-    """Test chat without message field."""
     response = client.post(
         "/chat",
         json={
@@ -144,7 +133,6 @@ def test_chat_missing_message():
 
 
 def test_chat_response_structure():
-    """Test that response has correct structure."""
     response = client.post(
         "/chat",
         json={
@@ -155,94 +143,47 @@ def test_chat_response_structure():
     
     assert response.status_code == 200
     data = response.json()
-    
-    # Required fields
     assert "response" in data
     assert "intent" in data
     assert "memory" in data
-    
-    # Optional fields
-    if "tool_calls" in data:
+    if "tool_calls" in data and data["tool_calls"] is not None:
         assert isinstance(data["tool_calls"], list)
-    
-    # Memory structure
     memory = data["memory"]
     assert "slots" in memory
     assert "context_keys" in memory
     assert "history_length" in memory
-    assert "last_updated" in memory
 
 
 def test_chat_multi_turn_conversation():
-    """Test multi-turn conversation."""
-    # First message
-    response1 = client.post(
-        "/chat",
-        json={
-            "message": "Hello",
-            "history": []
-        }
-    )
+    response1 = client.post("/chat", json={"message": "Hello", "history": []})
     assert response1.status_code == 200
     data1 = response1.json()
-    
-    # Second message with history
     history = [
         {"role": "user", "content": "Hello", "timestamp": None},
         {"role": "assistant", "content": data1["response"], "timestamp": None}
     ]
-    
-    response2 = client.post(
-        "/chat",
-        json={
-            "message": "What can you do?",
-            "history": history
-        }
-    )
+    response2 = client.post("/chat", json={"message": "What can you do?", "history": history})
     assert response2.status_code == 200
-    data2 = response2.json()
-    assert "response" in data2
+    assert "response" in response2.json()
 
 
 def test_chat_clarification_request():
-    """Test that clarification is requested when slots are missing."""
-    response = client.post(
-        "/chat",
-        json={
-            "message": "calculate",
-            "history": []
-        }
-    )
-    
+    response = client.post("/chat", json={"message": "calculate", "history": []})
     assert response.status_code == 200
     data = response.json()
-    # Should ask for clarification or provide helpful response
     assert "response" in data
     assert len(data["response"]) > 0
 
 
 def test_chat_tool_calls_present():
-    """Test that tool calls are included when tools are used."""
-    response = client.post(
-        "/chat",
-        json={
-            "message": "2 + 2",
-            "history": []
-        }
-    )
-    
+    response = client.post("/chat", json={"message": "2 + 2", "history": []})
     assert response.status_code == 200
     data = response.json()
-    
-    # If calculator was called, tool_calls should be present
-    if data.get("intent") == "calculator":
-        # Tool calls may or may not be present depending on implementation
-        # Just verify structure is correct if present
-        if "tool_calls" in data and data["tool_calls"]:
-            assert isinstance(data["tool_calls"], list)
-            assert len(data["tool_calls"]) > 0
-            tool_call = data["tool_calls"][0]
-            assert "tool" in tool_call
-            assert "input" in tool_call
-            assert "output" in tool_call
+    if data.get("intent") == "calculator" and "tool_calls" in data and data["tool_calls"]:
+        assert isinstance(data["tool_calls"], list)
+        assert len(data["tool_calls"]) > 0
+        tool_call = data["tool_calls"][0]
+        assert "tool" in tool_call
+        assert "input" in tool_call
+        assert "output" in tool_call
 

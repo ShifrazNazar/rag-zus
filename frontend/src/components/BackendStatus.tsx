@@ -1,64 +1,38 @@
-/**
- * BackendStatus component to show backend connection status.
- */
 import { useEffect, useState } from "react";
 import { checkHealth } from "../services/api";
-import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
-import { cn } from "../lib/utils";
+import { CheckCircle2, XCircle } from "lucide-react";
 
 export default function BackendStatus() {
-  const [isConnected, setIsConnected] = useState<boolean | null>(null);
-  const [isChecking, setIsChecking] = useState(true);
+  const [isConnected, setIsConnected] = useState<boolean>(true);
 
   useEffect(() => {
     const checkConnection = async () => {
-      setIsChecking(true);
       try {
-        const healthy = await checkHealth();
-        setIsConnected(healthy);
+        setIsConnected(await checkHealth());
       } catch {
         setIsConnected(false);
-      } finally {
-        setIsChecking(false);
       }
     };
 
     checkConnection();
-    // Check every 30 seconds
     const interval = setInterval(checkConnection, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  if (isChecking) {
-    return (
-      <div className="flex items-center gap-2 px-4 py-2 text-xs text-muted-foreground">
-        <Loader2 className="h-3 w-3 animate-spin" />
-        <span>Checking backend...</span>
-      </div>
-    );
-  }
-
   return (
     <div
-      className={cn(
-        "flex items-center gap-2 px-4 py-2 text-xs",
-        isConnected
-          ? "text-green-600 dark:text-green-400"
-          : "text-red-600 dark:text-red-400"
-      )}
+      className={`flex items-center gap-2 text-xs ${
+        isConnected ? "text-green-600" : "text-red-600"
+      }`}
     >
       {isConnected ? (
-        <>
-          <CheckCircle2 className="h-3 w-3" />
-          <span>Backend connected</span>
-        </>
+        <CheckCircle2 className="h-3.5 w-3.5" />
       ) : (
-        <>
-          <XCircle className="h-3 w-3" />
-          <span>Backend disconnected</span>
-        </>
+        <XCircle className="h-3.5 w-3.5" />
       )}
+      <span className="hidden sm:inline">
+        {isConnected ? "Connected" : "Disconnected"}
+      </span>
     </div>
   );
 }
-

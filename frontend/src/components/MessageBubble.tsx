@@ -1,8 +1,4 @@
-/**
- * MessageBubble component for displaying individual chat messages.
- */
 import type { ChatMessage } from "../services/api";
-import { cn } from "../lib/utils";
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -11,16 +7,6 @@ interface MessageBubbleProps {
 export default function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === "user";
   const isSystem = message.role === "system";
-
-  const formatTimestamp = (timestamp?: string) => {
-    if (!timestamp) return "";
-    try {
-      const date = new Date(timestamp);
-      return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    } catch {
-      return "";
-    }
-  };
 
   if (isSystem) {
     return (
@@ -33,26 +19,23 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
   }
 
   return (
-    <div className={cn("flex mb-4", isUser ? "justify-end" : "justify-start")}>
+    <div className={`flex mb-5 ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={cn(
-          "max-w-[80%] md:max-w-[70%] rounded-lg px-4 py-2",
+        className={`max-w-[85%] rounded-lg px-4 py-3 ${
           isUser
             ? "bg-primary text-primary-foreground"
-            : "bg-muted text-muted-foreground"
-        )}
+            : "bg-card border text-card-foreground"
+        }`}
       >
         <div className="text-sm whitespace-pre-wrap break-words">
           {message.content}
         </div>
         {message.timestamp && (
-          <div
-            className={cn(
-              "text-xs mt-1",
-              isUser ? "text-primary-foreground/70" : "text-muted-foreground"
-            )}
-          >
-            {formatTimestamp(message.timestamp)}
+          <div className="text-xs mt-2 opacity-70">
+            {new Date(message.timestamp).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </div>
         )}
       </div>

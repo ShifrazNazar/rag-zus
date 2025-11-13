@@ -1,13 +1,15 @@
-/**
- * API service for backend communication.
- */
-
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
   timestamp?: string;
+  tool_calls?: Array<{
+    tool: string;
+    input: Record<string, any>;
+    output: Record<string, any>;
+  }>;
+  intent?: string;
 }
 
 export interface ChatRequest {
@@ -59,9 +61,6 @@ export interface OutletsResponse {
   sql_query?: string;
 }
 
-/**
- * Send a chat message to the backend.
- */
 export async function sendMessage(
   message: string,
   history: ChatMessage[] = []
@@ -92,9 +91,6 @@ export async function sendMessage(
   }
 }
 
-/**
- * Calculate a mathematical expression.
- */
 export async function calculate(
   expression: string
 ): Promise<CalculatorResponse> {
@@ -121,9 +117,6 @@ export async function calculate(
   }
 }
 
-/**
- * Search for products.
- */
 export async function searchProducts(query: string): Promise<ProductsResponse> {
   try {
     const response = await fetch(
@@ -150,9 +143,6 @@ export async function searchProducts(query: string): Promise<ProductsResponse> {
   }
 }
 
-/**
- * Search for outlets.
- */
 export async function searchOutlets(query: string): Promise<OutletsResponse> {
   try {
     const response = await fetch(
@@ -179,9 +169,6 @@ export async function searchOutlets(query: string): Promise<OutletsResponse> {
   }
 }
 
-/**
- * Check if the backend is healthy.
- */
 export async function checkHealth(): Promise<boolean> {
   try {
     const response = await fetch(`${API_URL}/health`);

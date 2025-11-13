@@ -1,0 +1,363 @@
+---
+alwaysApply: true
+---
+
+# Mindhive AI Chatbot - Cursor Guidelines
+
+## Project Overview
+
+Multi-agent chatbot with RAG, Text2SQL, tool calling, and custom React frontend. Built for Mindhive technical assessment.
+
+## Tech Stack
+
+- **Backend**: FastAPI, LangChain, FAISS, SQLite, OpenAI/Anthropic API
+- **Frontend**: React (Vite), TailwindCSS, localStorage
+- **Testing**: pytest, jest/vitest
+- **Deployment**: Backend on Railway/Render, Frontend on Vercel
+
+## Project Structure
+
+```
+mindhive-chatbot/
+├── backend/
+│   ├── main.py                 # FastAPI app entry
+│   ├── requirements.txt
+│   ├── .env.example
+│   ├── routers/
+│   │   ├── calculator.py       # POST /calculate
+│   │   ├── products.py         # GET /products?query=<text>
+│   │   ├── outlets.py          # GET /outlets?query=<nl>
+│   │   └── chat.py             # POST /chat (main agent endpoint)
+│   ├── services/
+│   │   ├── agent_planner.py    # Intent parsing, action selection
+│   │   ├── memory_manager.py   # Conversation state tracking
+│   │   ├── rag_service.py      # Vector store + retrieval
+│   │   ├── text2sql_service.py # NL to SQL translation
+│   │   └── tool_executor.py    # Tool call wrapper with error handling
+│   ├── models/
+│   │   ├── schemas.py          # Pydantic models
+│   │   └── database.py         # SQLite connection
+│   ├── data/
+│   │   ├── outlets.db          # SQLite database
+│   │   ├── products/           # Scraped product data
+│   │   └── faiss_index/        # Vector store files
+│   ├── scripts/
+│   │   ├── scrape_products.py  # Scrape shop.zuscoffee.com drinkware
+│   │   └── scrape_outlets.py   # Scrape zuscoffee.com outlets
+│   └── tests/
+│       ├── test_calculator.py
+│       ├── test_products.py
+│       ├── test_outlets.py
+│       └── test_agent.py
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── ChatWindow.jsx
+│   │   │   ├── MessageList.jsx
+│   │   │   ├── MessageBubble.jsx
+│   │   │   ├── InputComposer.jsx
+│   │   │   └── QuickActions.jsx
+│   │   ├── hooks/
+│   │   │   └── useChat.js      # Chat state management
+│   │   ├── services/
+│   │   │   └── api.js          # Backend API calls
+│   │   ├── utils/
+│   │   │   └── localStorage.js # Persistence helper
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── package.json
+│   └── vite.config.js
+├── README.md
+└── docker-compose.yml
+```
+
+## Code Style & Conventions
+
+### Python (Backend)
+
+- Use type hints everywhere: `def calculate(expression: str) -> dict[str, Any]:`
+- Async/await for all I/O operations
+- Pydantic for request/response validation
+- Error handling: Always return structured JSON errors, never raise unhandled exceptions
+- Logging: Use `logging` module, INFO for actions, ERROR for failures
+- Naming: snake_case for functions/variables, PascalCase for classes
+- Max line length: 100 characters
+- Docstrings: Google style for all public functions
+
+### JavaScript (Frontend)
+
+- Functional components with hooks only (no class components)
+- TypeScript optional but JSDoc comments required for complex functions
+- Naming: camelCase for functions/variables, PascalCase for components
+- Props: Destructure in function signature
+- State: Use useState for local, context for global
+- API calls: Centralize in `services/api.js`
+- Error boundaries: Wrap main app and chat components
+
+### Git Commits
+
+- Format: `[module] action: description`
+- Examples:
+  - `[backend] feat: add calculator endpoint with error handling`
+  - `[frontend] fix: prevent message duplication on refresh`
+  - `[scraper] chore: update outlet scraping selectors`
+
+## Development Workflow
+
+### Phase 1: Backend Foundation
+
+1. **Setup FastAPI project**
+
+   - Install: `fastapi uvicorn langchain openai faiss-cpu sqlalchemy pydantic`
+   - Create `.env` with `OPENAI_API_KEY=xxx` or `ANTHROPIC_API_KEY=xxx`
+   - Test server: `uvicorn main:app --reload`
+
+2. **Build Calculator API**
+
+   - Endpoint: `POST /calculate`
+   - Body: `{"expression": "2 + 2"}`
+   - Use `ast.literal_eval` for safe parsing (no `eval()`)
+   - Return: `{"result": 4}` or `{"error": "Invalid expression"}`
+   - Test cases: valid math, malformed input, division by zero
+
+3. **Scrape ZUS Data**
+
+   - Products: https://shop.zuscoffee.com/ (drinkware only)
+   - Outlets: https://zuscoffee.com/category/store/kuala-lumpur-selangor/
+   - Save products as JSON, outlets in SQLite
+   - Schema: `outlets(id, name, location, district, hours, services, lat, lon)`
+
+4. **Products RAG Endpoint**
+
+   - Chunk product descriptions (500 chars)
+   - Embed with `sentence-transformers` or OpenAI
+   - Store in FAISS
+   - Endpoint: `GET /products?query=tumbler`
+   - Return top-3 results + LLM summary
+   - Error: Empty query returns 400, no results returns empty list
+
+5. **Outlets Text2SQL Endpoint**
+   - Endpoint: `GET /outlets?query=outlets in petaling jaya`
+   - Use LangChain `SQLDatabaseChain` or custom prompt
+   - Sanitize: Whitelist SELECT, block DROP/DELETE/UPDATE
+   - Execute query, return JSON results
+   - Error: Log SQL injection attempts, return sanitized error
+
+### Phase 2: Agent Core
+
+1. **Memory System**
+
+   - Use LangChain `ConversationBufferMemory`
+   - Track slots: `outlet_name`, `product_interest`, `calculation_pending`
+   - Persist in session (Redis optional, dict for MVP)
+
+2. **Agent Planner**
+
+   ```python
+   class AgentPlanner:
+       def analyze_intent(self, user_input: str, memory: dict) -> dict:
+           # Use LLM to classify: calculator, product_search, outlet_query, chat
+           # Return: {"intent": "calculator", "missing_slots": ["expression"]}
+
+       def select_action(self, intent: str, slots: dict) -> str:
+           # Return: "ask_clarification", "call_calculator", "call_products", etc.
+
+       def execute_action(self, action: str, params: dict) -> dict:
+           # Call tool, update memory, return response
+   ```
+
+3. **Tool Integration**
+
+   - Wrapper functions for each API with timeout (3s)
+   - Retry logic: 1 retry on 500 error
+   - Circuit breaker: After 3 failures, return cached "service unavailable"
+
+4. **Unhappy Flow Handling**
+   - Missing params: Ask clarifying question ("What would you like to calculate?")
+   - API down: Return friendly error ("Calculator is temporarily unavailable")
+   - Malicious input: Sanitize and log, return error message
+
+### Phase 3: Frontend
+
+1. **React Setup**
+
+   - `npm create vite@latest frontend -- --template react`
+   - Install: `tailwindcss lucide-react`
+   - Configure Tailwind in `tailwind.config.js`
+
+2. **Chat Components**
+
+   - `MessageBubble`: Avatar, timestamp, message content, loading indicator
+   - `InputComposer`: Multiline textarea, Enter to send, Shift+Enter for newline
+   - `QuickActions`: Dropdown for `/calc`, `/products`, `/outlets`, `/reset`
+   - `MessageList`: Auto-scroll to bottom, virtualized for performance
+
+3. **API Integration**
+
+   - `api.js`: Single function `sendMessage(content, history)`
+   - Calls backend `/chat` endpoint
+   - Handles errors gracefully, shows toast notifications
+
+4. **Persistence**
+
+   - Save `chatHistory` to localStorage after each message
+   - Load on mount, clear on `/reset`
+   - Format: `[{role: 'user'|'bot', content: string, timestamp: ISO8601}]`
+
+5. **Agent Visualization**
+   - Show loading states: "🔍 Searching products..." "🧮 Calculating..."
+   - Display tool calls as expandable cards
+   - Highlight errors in red, success in green
+
+### Phase 4: Testing & Documentation
+
+1. **Backend Tests**
+
+   - pytest for all endpoints
+   - Mock external APIs (LLM, embeddings)
+   - Test unhappy paths: missing params, timeouts, malicious input
+   - Coverage target: >80%
+
+2. **Frontend Tests**
+
+   - Jest/Vitest for components
+   - Test user interactions: sending messages, quick actions, persistence
+   - Snapshot tests for UI consistency
+
+3. **Integration Tests**
+
+   - End-to-end flows with Playwright
+   - Test: Multi-turn conversation, tool calling, error recovery
+
+4. **Documentation**
+   - README: Setup instructions, architecture diagram, trade-offs
+   - API docs: FastAPI auto-generates at `/docs`
+   - Example transcripts: 5+ flows covering happy and unhappy paths
+
+## Critical Rules
+
+### Security
+
+- **NEVER** use `eval()` for calculator, use `ast.literal_eval`
+- **ALWAYS** sanitize SQL queries (parameterized queries only)
+- **NEVER** expose API keys in frontend code
+- **ALWAYS** validate input on backend (Pydantic models)
+- **ALWAYS** rate limit endpoints (10 req/min per IP)
+
+### Performance
+
+- **ALWAYS** use async/await for I/O operations
+- **CACHE** embeddings and LLM responses where possible
+- **TIMEOUT** all external calls (3s max)
+- **LAZY LOAD** chat history (only last 50 messages in UI)
+
+### Error Handling
+
+- **NEVER** crash on user input, always return structured error
+- **ALWAYS** log errors with context (user_id, timestamp, input)
+- **ALWAYS** provide recovery path ("Try asking another way")
+- **NEVER** expose internal errors to user (sanitize stack traces)
+
+### Memory Management
+
+- **ALWAYS** include conversation history in context window
+- **TRUNCATE** history if exceeds token limit (keep last 10 turns)
+- **RESET** memory on `/reset` command
+- **PERSIST** memory across page refreshes (localStorage)
+
+## Testing Checklist
+
+- [ ] Calculator: Valid math, malformed input, division by zero
+- [ ] Products: Valid query, empty query, no results, API timeout
+- [ ] Outlets: Valid query, SQL injection attempt, API down
+- [ ] Agent: Multi-turn context, slot filling, action selection
+- [ ] Frontend: Message send, persistence, quick actions, error display
+- [ ] Integration: Full flow from user input to response
+
+## Deployment Checklist
+
+- [ ] Environment variables in .env.example (no secrets committed)
+- [ ] Docker Compose for local development
+- [ ] Backend deployed to Railway/Render with health check endpoint
+- [ ] Frontend deployed to Vercel with API_URL env variable
+- [ ] README has live demo link and setup instructions
+- [ ] All tests passing in CI/CD pipeline
+
+## Common Pitfalls to Avoid
+
+1. **Forgetting to handle async properly**: Always await API calls
+2. **Not testing unhappy paths**: Test failures as much as successes
+3. **Exposing secrets**: Use .env, never commit keys
+4. **Poor error messages**: Be specific ("Missing outlet name") not generic ("Error occurred")
+5. **Not persisting chat**: Users expect history to survive refresh
+6. **Ignoring SQL injection**: Always use parameterized queries
+7. **No loading indicators**: Users need feedback during async operations
+8. **Not handling token limits**: Truncate history if context too large
+
+## Resources
+
+- FastAPI docs: https://fastapi.tiangolo.com
+- LangChain docs: https://python.langchain.com
+- FAISS tutorial: https://github.com/facebookresearch/faiss/wiki
+- React hooks: https://react.dev/reference/react
+- Tailwind CSS: https://tailwindcss.com/docs
+
+## Decision Log
+
+Track key architectural decisions here:
+
+**Why FAISS over Pinecone?**
+
+- Local-first, no API costs, sufficient for <10k docs, easier testing
+
+**Why SQLite over PostgreSQL?**
+
+- Simpler setup, read-heavy workload, easy to bundle with app
+
+**Why LangChain over custom agent loop?**
+
+- Battle-tested, good abstractions, tool calling built-in, faster development
+
+**Why localStorage over session storage?**
+
+- Persists across tabs/windows, better UX for returning users
+
+---
+
+## Quick Start Commands
+
+**Backend:**
+
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python scripts/scrape_products.py
+python scripts/scrape_outlets.py
+uvicorn main:app --reload --port 8000
+```
+
+**Frontend:**
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+**Tests:**
+
+```bash
+# Backend
+cd backend && pytest -v
+
+# Frontend
+cd frontend && npm test
+```
+
+**Full Stack:**
+
+```bash
+docker-compose up
+```

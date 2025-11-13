@@ -49,7 +49,10 @@ DATABASE_URL = f"sqlite:///{DATABASE_DIR / 'outlets.db'}"
 # Create engine
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False},  # Needed for SQLite
+    connect_args={
+        "check_same_thread": False,  # Needed for SQLite
+        "timeout": 30.0  # Wait up to 30 seconds for database lock to be released
+    },
     echo=False  # Set to True for SQL query logging
 )
 

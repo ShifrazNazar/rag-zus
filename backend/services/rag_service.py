@@ -173,8 +173,16 @@ class RAGService:
             if not description:
                 continue
             
-            # Chunk the description
-            text_chunks = self._chunk_text(description, self.chunk_size)
+            # Include category in the text for better category-based searches
+            category = product.get("category", "")
+            if category:
+                # Prepend category to description for better semantic matching
+                full_text = f"{category} {description}"
+            else:
+                full_text = description
+            
+            # Chunk the text
+            text_chunks = self._chunk_text(full_text, self.chunk_size)
             
             for chunk in text_chunks:
                 self.chunks.append({
@@ -233,13 +241,13 @@ class RAGService:
         except Exception as e:
             logger.error(f"Error saving index: {e}", exc_info=True)
     
-    def search(self, query: str, top_k: int = 3) -> List[Dict[str, Any]]:
+    def search(self, query: str, top_k: int = 10) -> List[Dict[str, Any]]:
         """
         Search for products using semantic similarity.
         
         Args:
             query: Search query string
-            top_k: Number of top results to return
+            top_k: Number of top results to return (default: 10)
             
         Returns:
             List of product dictionaries with similarity scores
@@ -256,6 +264,13 @@ class RAGService:
             return []
         
         try:
+            # Ensure top_k is an integer
+            try:
+                top_k = int(top_k)
+            except (ValueError, TypeError):
+                top_k = 10
+                logger.warning(f"Invalid top_k value, using default: 10")
+            
             # Encode query
             query_embedding = self.encoder.encode([query])
             if np is None:

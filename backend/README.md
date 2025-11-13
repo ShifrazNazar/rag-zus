@@ -5,7 +5,7 @@ FastAPI backend for the Mindhive multi-agent chatbot with RAG, Text2SQL, tool ca
 ## Tech Stack
 
 - **Framework**: FastAPI
-- **AI/ML**: LangChain, OpenAI/Anthropic API
+- **AI/ML**: LangChain, Google Gemini API
 - **Vector Store**: FAISS
 - **Database**: SQLite (via SQLAlchemy)
 - **Validation**: Pydantic
@@ -84,12 +84,12 @@ backend/
    cp .env.example .env
    ```
    
-   Edit `.env` and add your API keys:
+   Edit `.env` and add your API key:
    ```env
-   OPENAI_API_KEY=your_openai_api_key_here
-   # OR
-   ANTHROPIC_API_KEY=your_anthropic_api_key_here
+   GEMINI_API_KEY=your_gemini_api_key_here
    ```
+   
+   Get your Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey).
 
 ## Running the Server
 
@@ -220,8 +220,7 @@ pytest --cov=. --cov-report=html
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `OPENAI_API_KEY` | OpenAI API key for LLM and embeddings | Yes (or ANTHROPIC_API_KEY) |
-| `ANTHROPIC_API_KEY` | Anthropic API key (alternative to OpenAI) | Yes (or OPENAI_API_KEY) |
+| `GEMINI_API_KEY` | Google Gemini API key for LLM and embeddings | Yes |
 | `HOST` | Server host (default: 0.0.0.0) | No |
 | `PORT` | Server port (default: 8000) | No |
 | `ENVIRONMENT` | Environment mode (development/production) | No |

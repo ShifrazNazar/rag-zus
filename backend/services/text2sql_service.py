@@ -1,21 +1,25 @@
 """
 Text2SQL service for converting natural language queries to SQL.
 Uses LangChain SQLDatabaseChain for safe SQL generation.
+Uses Google Gemini API.
 """
+import os
 import logging
 import re
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional, Tuple, Union
 
 try:
     from langchain_community.utilities import SQLDatabase
-    from langchain_openai import ChatOpenAI
+    from langchain_google_genai import ChatGoogleGenerativeAI
     from langchain.chains import create_sql_query_chain
     from langchain_core.prompts import PromptTemplate
+    from langchain_core.language_models import BaseChatModel
 except ImportError:
     SQLDatabase = None
-    ChatOpenAI = None
+    ChatGoogleGenerativeAI = None
     create_sql_query_chain = None
     PromptTemplate = None
+    BaseChatModel = None
 
 from models.database import engine, Outlet
 
@@ -49,14 +53,14 @@ class Text2SQLService:
         """
         self.db_uri = db_uri or f"sqlite:///data/outlets.db"
         self.db: Optional[SQLDatabase] = None
-        self.llm: Optional[ChatOpenAI] = None
+        self.llm: Optional[BaseChatModel] = None
         self.chain = None
         
         self._initialize()
     
     def _initialize(self) -> None:
         """Initialize database connection and LLM chain."""
-        if SQLDatabase is None or ChatOpenAI is None:
+        if SQLDatabase is None:
             logger.warning("LangChain not available, Text2SQL will be limited")
             return
         
@@ -65,16 +69,33 @@ class Text2SQLService:
             self.db = SQLDatabase(engine, include_tables=['outlets'])
             logger.info("Connected to SQLite database")
             
-            # Initialize LLM (will use OpenAI API key from environment)
-            try:
-                self.llm = ChatOpenAI(
-                    model="gpt-3.5-turbo",
-                    temperature=0,
-                    verbose=False
-                )
-                
-                # Create SQL query chain with custom prompt
-                prompt = PromptTemplate.from_template("""
+            # Check for Gemini API key and initialize LLM
+            gemini_key = os.getenv("GEMINI_API_KEY")
+            
+            if gemini_key and ChatGoogleGenerativeAI is not None:
+                try:
+                    self.llm = ChatGoogleGenerativeAI(
+                        model="gemini-pro",
+                        temperature=0,
+                        google_api_key=gemini_key
+                    )
+                    logger.info("Text2SQL service initialized with Google Gemini")
+                except Exception as e:
+                    logger.warning(f"Could not initialize Gemini: {e}")
+                    self.llm = None
+            else:
+                if not gemini_key:
+                    logger.warning("GEMINI_API_KEY not found in environment variables")
+                if ChatGoogleGenerativeAI is None:
+                    logger.warning("langchain_google_genai not available")
+                self.llm = None
+            
+            if self.llm is None:
+                logger.warning("No LLM available for Text2SQL")
+                return
+            
+            # Create SQL query chain with custom prompt
+            prompt = PromptTemplate.from_template("""
 You are a SQL expert. Given the following database schema and question, generate a SQL query.
 
 Database Schema:
@@ -87,20 +108,19 @@ Generate a SQL query that:
 2. Only queries the 'outlets' table
 3. Uses proper SQL syntax
 4. Returns relevant results
+5. For location-based queries (like "KL", "Kuala Lumpur", "Petaling Jaya", "all outlets", "near me"), use LIMIT 200 or no LIMIT to return all matching results
+6. For specific outlet name queries, use LIMIT 10
 
 SQL Query:
 """)
-                
-                self.chain = create_sql_query_chain(self.llm, self.db, prompt=prompt)
-                logger.info("Text2SQL service initialized")
-                
-            except Exception as e:
-                logger.warning(f"Could not initialize LLM: {e}. Text2SQL will use fallback.")
-                self.llm = None
-                self.chain = None
+            
+            self.chain = create_sql_query_chain(self.llm, self.db, prompt=prompt)
+            logger.info("Text2SQL service initialized")
                 
         except Exception as e:
             logger.error(f"Error initializing Text2SQL service: {e}", exc_info=True)
+            self.llm = None
+            self.chain = None
             self.db = None
     
     def sanitize_sql(self, sql: str) -> str:
@@ -156,12 +176,50 @@ SQL Query:
             
             # Sanitize the generated SQL
             sql = self.sanitize_sql(sql)
+            
+            # Post-process: Adjust LIMIT for location-based queries
+            sql = self._adjust_limit_for_location_queries(sql, query)
+            
             logger.info(f"Generated SQL: {sql}")
             return sql
             
         except Exception as e:
             logger.error(f"Error generating SQL: {e}", exc_info=True)
             return self._fallback_sql_generation(query)
+    
+    def _adjust_limit_for_location_queries(self, sql: str, query: str) -> str:
+        """
+        Adjust LIMIT clause for location-based queries to return more results.
+        
+        Args:
+            sql: Generated SQL query
+            query: Original natural language query
+            
+        Returns:
+            SQL query with adjusted LIMIT
+        """
+        query_lower = query.lower()
+        
+        # Check if this is a location-based query
+        location_keywords = ['kl', 'kuala lumpur', 'petaling jaya', 'pj', 'selangor', 
+                            'near me', 'all outlets', 'show all', 'list all']
+        is_location_query = any(keyword in query_lower for keyword in location_keywords)
+        
+        if is_location_query:
+            # Check if LIMIT exists and is too small
+            limit_match = re.search(r'LIMIT\s+(\d+)', sql, re.IGNORECASE)
+            if limit_match:
+                current_limit = int(limit_match.group(1))
+                if current_limit < 100:
+                    # Replace with higher limit
+                    sql = re.sub(r'LIMIT\s+\d+', 'LIMIT 200', sql, flags=re.IGNORECASE)
+                    logger.info(f"Adjusted LIMIT from {current_limit} to 200 for location query")
+            else:
+                # Add LIMIT if missing
+                sql = sql.rstrip(';').strip() + ' LIMIT 200'
+                logger.info("Added LIMIT 200 for location query")
+        
+        return sql
     
     def _fallback_sql_generation(self, query: str) -> Optional[str]:
         """
@@ -175,18 +233,37 @@ SQL Query:
         """
         query_lower = query.lower()
         
-        # Simple pattern matching
-        if 'petaling jaya' in query_lower or 'pj' in query_lower:
-            return "SELECT * FROM outlets WHERE district LIKE '%Petaling Jaya%' OR district LIKE '%PJ%'"
+        # Handle "near me" or general location queries - return all outlets
+        if 'near me' in query_lower or 'all outlets' in query_lower or 'show all' in query_lower:
+            return "SELECT * FROM outlets ORDER BY name LIMIT 200"
+        
+        # Handle specific outlet name queries (use smaller limit)
+        if 'ss' in query_lower and ('2' in query_lower or 'ss2' in query_lower):
+            return "SELECT * FROM outlets WHERE name LIKE '%SS%' OR location LIKE '%SS%' OR location LIKE '%SS 2%' LIMIT 10"
+        elif '1' in query_lower and 'utama' in query_lower:
+            return "SELECT * FROM outlets WHERE name LIKE '%1 Utama%' OR location LIKE '%1 Utama%' OR location LIKE '%Bandar Utama%' LIMIT 10"
+        elif 'klcc' in query_lower:
+            return "SELECT * FROM outlets WHERE name LIKE '%KLCC%' OR location LIKE '%KLCC%' LIMIT 10"
+        elif 'pavilion' in query_lower:
+            return "SELECT * FROM outlets WHERE name LIKE '%Pavilion%' OR location LIKE '%Pavilion%' LIMIT 10"
+        elif 'sunway' in query_lower:
+            return "SELECT * FROM outlets WHERE name LIKE '%Sunway%' OR location LIKE '%Sunway%' LIMIT 10"
+        elif 'subang' in query_lower:
+            return "SELECT * FROM outlets WHERE name LIKE '%Subang%' OR location LIKE '%Subang%' LIMIT 10"
+        elif 'damansara' in query_lower:
+            return "SELECT * FROM outlets WHERE name LIKE '%Damansara%' OR location LIKE '%Damansara%' LIMIT 10"
+        # Location-based queries - return more results (up to 200)
+        elif 'petaling jaya' in query_lower or 'pj' in query_lower:
+            return "SELECT * FROM outlets WHERE district LIKE '%Petaling Jaya%' OR district LIKE '%PJ%' ORDER BY name LIMIT 200"
         elif 'kuala lumpur' in query_lower or 'kl' in query_lower:
-            return "SELECT * FROM outlets WHERE district LIKE '%Kuala Lumpur%' OR district LIKE '%KL%'"
+            return "SELECT * FROM outlets WHERE district LIKE '%Kuala Lumpur%' OR district LIKE '%KL%' ORDER BY name LIMIT 200"
         elif 'selangor' in query_lower:
-            return "SELECT * FROM outlets WHERE district LIKE '%Selangor%'"
+            return "SELECT * FROM outlets WHERE district LIKE '%Selangor%' ORDER BY name LIMIT 200"
         elif 'all' in query_lower or 'list' in query_lower:
-            return "SELECT * FROM outlets LIMIT 50"
+            return "SELECT * FROM outlets ORDER BY name LIMIT 200"
         else:
-            # Generic search in name and location
-            return f"SELECT * FROM outlets WHERE name LIKE '%{query}%' OR location LIKE '%{query}%' OR district LIKE '%{query}%' LIMIT 20"
+            # Generic search in name and location - return more results
+            return f"SELECT * FROM outlets WHERE name LIKE '%{query}%' OR location LIKE '%{query}%' OR district LIKE '%{query}%' ORDER BY name LIMIT 200"
     
     def execute_query(self, sql: str) -> List[Dict[str, Any]]:
         """

@@ -1,23 +1,19 @@
-/**
- * InputComposer component for chat input with multiline support.
- */
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import type { KeyboardEvent } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Send } from "lucide-react";
-import { cn } from "../lib/utils";
 
 interface InputComposerProps {
   onSend: (message: string) => void;
   disabled?: boolean;
-  placeholder?: string;
 }
+
+const QUICK_ACTIONS = ["/calc", "/products", "/outlets", "/reset"];
 
 export default function InputComposer({
   onSend,
   disabled = false,
-  placeholder = "Type your message...",
 }: InputComposerProps) {
   const [message, setMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -26,7 +22,6 @@ export default function InputComposer({
     if (message.trim() && !disabled) {
       onSend(message);
       setMessage("");
-      // Reset textarea height
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
       }
@@ -40,42 +35,51 @@ export default function InputComposer({
     }
   };
 
-  // Auto-resize textarea
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
-  }, [message]);
+  const showAutocomplete = message.trim().startsWith("/");
+  const filteredActions = QUICK_ACTIONS.filter((action) =>
+    action.toLowerCase().includes(message.trim().toLowerCase())
+  );
 
   return (
-    <div className="border-t border-border bg-background p-4">
-      <div className="flex items-end space-x-2">
+    <div className="p-4">
+      <div className="flex items-end gap-2">
         <div className="flex-1 relative">
           <Textarea
             ref={textareaRef}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={placeholder}
+            placeholder="Type your message..."
             disabled={disabled}
             rows={1}
-            className={cn("resize-none", "min-h-[44px] max-h-[120px]")}
+            className="resize-none min-h-[52px] max-h-[120px]"
           />
+          {showAutocomplete && filteredActions.length > 0 && (
+            <div className="absolute bottom-full left-0 right-0 mb-2 bg-popover border rounded-lg shadow-lg z-10">
+              {filteredActions.map((action) => (
+                <div
+                  key={action}
+                  className="px-3 py-2 cursor-pointer text-sm hover:bg-muted"
+                  onClick={() => {
+                    setMessage(action + " ");
+                    textareaRef.current?.focus();
+                  }}
+                >
+                  {action}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <Button
           onClick={handleSend}
           disabled={!message.trim() || disabled}
           size="icon"
-          className="h-10 w-10"
+          className="h-[52px] w-[52px]"
         >
           <Send className="h-4 w-4" />
-          <span className="sr-only">Send message</span>
         </Button>
       </div>
-      <p className="text-xs text-muted-foreground mt-2">
-        Press Enter to send, Shift+Enter for new line
-      </p>
     </div>
   );
 }
