@@ -126,19 +126,36 @@ class AgentPlanner:
     def _rule_based_classify_intent(self, user_input: str, memory: Dict[str, Any]) -> Dict[str, Any]:
         user_lower = user_input.lower()
         
-        if any(word in user_lower for word in ['hour', 'time', 'open', 'close', 'when', 'opening']):
+        # Check for outlet-related queries first (hours, services, etc.)
+        outlet_keywords = ['hour', 'time', 'open', 'close', 'when', 'opening', 'closing', 
+                          'service', 'services', 'drive through', 'drive-through', 'wifi', 
+                          'dine-in', 'dine in', 'what are the services', 'have']
+        if any(keyword in user_lower for keyword in outlet_keywords):
+            # Check if this is about an outlet
             last_outlets = memory.get("context", {}).get("last_outlets", [])
-            if last_outlets:
+            if last_outlets or 'zus' in user_lower or 'outlet' in user_lower:
                 outlet_name = self._extract_outlet_name(user_input, last_outlets)
                 if outlet_name:
+                    # Determine follow-up type
+                    if any(word in user_lower for word in ['service', 'services', 'drive through', 'wifi', 'dine']):
+                        followup_type = "services"
+                    elif any(word in user_lower for word in ['close', 'closing', 'close time', 'closing time']):
+                        followup_type = "close_time"
+                    elif any(word in user_lower for word in ['open', 'opening', 'open time', 'opening time']):
+                        followup_type = "open_time"
+                    else:
+                        followup_type = "hours"
                     return {
                         "intent": self.INTENT_OUTLETS,
                         "confidence": 0.9,
-                        "slots": {"query": outlet_name, "followup": "hours"},
+                        "slots": {"query": outlet_name, "followup": followup_type},
                         "missing_slots": []
                     }
         
-        if re.search(r'\d+\s*[+\-*/]\s*\d+|calculate|compute|what is|what\'s|math|\+|\-|\*|/|plus|minus|times', user_lower):
+        # Check for calculator - be more specific to avoid matching outlet names
+        # Only match if it looks like a math expression, not just contains a dash
+        math_pattern = r'(?:^|\s)(?:\d+\s*[+\-*/]\s*\d+|calculate|compute|what is|what\'s|math|plus|minus|times|multiply|divide)(?:\s|$)'
+        if re.search(math_pattern, user_lower) and not any(word in user_lower for word in ['outlet', 'zus', 'coffee', 'petaling', 'jaya', 'kl', 'kuala', 'lumpur']):
             expression = self._extract_expression(user_input)
             return {
                 "intent": self.INTENT_CALCULATOR,
@@ -194,6 +211,7 @@ class AgentPlanner:
     def _extract_outlet_name(self, text: str, available_outlets: List[Dict[str, Any]]) -> Optional[str]:
         text_lower = text.lower()
         
+        # First, try to match full outlet name patterns
         full_outlet_pattern = r'zus\s+coffee\s*[–\-]\s*([^,?\n]+)'
         match = re.search(full_outlet_pattern, text_lower, re.IGNORECASE)
         if match:
@@ -204,6 +222,20 @@ class AgentPlanner:
                     return best_match.get('name', extracted_name)
             return extracted_name
         
+        # Check if the text contains a known outlet name from available outlets
+        if available_outlets:
+            # Try to find outlet name in the text
+            for outlet in available_outlets:
+                outlet_name = outlet.get('name', '').lower()
+                # Check if outlet name (or significant parts) appears in the text
+                outlet_words = [w for w in outlet_name.split() if len(w) > 2 and w not in ['zus', 'coffee']]
+                if outlet_words:
+                    # Check if key words from outlet name appear in text
+                    matches = sum(1 for word in outlet_words if word in text_lower)
+                    if matches >= 2 or (matches == 1 and len(outlet_words) == 1):
+                        return outlet.get('name')
+        
+        # Handle common outlet keywords
         outlet_keywords = {
             'ss': 'SS2',  # Updated to match actual outlet name
             'ss2': 'SS2',  # Updated to match actual outlet name
@@ -213,21 +245,25 @@ class AgentPlanner:
             'pavilion': 'Pavilion',
             'sunway': 'Sunway Pyramid',
             'subang': 'Subang Jaya',
-            'damansara': 'Damansara Perdana'
+            'damansara': 'Damansara Perdana',
+            'megah rise': 'Megah Rise Mall',
+            'pj new town': 'PJ New Town'
         }
         
         for keyword, default_name in outlet_keywords.items():
             if keyword in text_lower:
                 if available_outlets:
                     for outlet in available_outlets:
-                        if keyword in outlet.get('name', '').lower():
+                        outlet_name_lower = outlet.get('name', '').lower()
+                        if keyword in outlet_name_lower:
                             return outlet.get('name', default_name)
                 return default_name
         
+        # Try to extract outlet name by removing common question words
         if available_outlets:
-            cleaned = re.sub(r'(what|what\'s|the|opening|hours?|time|when|is|there|an|outlet|in|zus\s+coffee)', '', text_lower, flags=re.IGNORECASE)
+            cleaned = re.sub(r'(what|what\'s|what are|the|opening|hours?|time|when|is|there|an|outlet|in|zus\s+coffee|have|services?|service)', '', text_lower, flags=re.IGNORECASE)
             cleaned = cleaned.strip().strip('–-,').strip()
-            if cleaned:
+            if cleaned and len(cleaned) > 2:
                 best_match = self._find_best_outlet_match(cleaned, available_outlets)
                 if best_match:
                     return best_match.get('name', cleaned)

@@ -200,9 +200,15 @@ async def chat(request: ChatRequest) -> ChatResponse:
             query = slots.get("query", request.message)
             followup = slots.get("followup")
             
-            if followup == "hours":
+            if followup in ["hours", "open_time", "close_time", "services"]:
                 last_outlets = memory_manager.get_context(session_id, "last_outlets", [])
-                outlet_name = query.split('–')[-1].split('-')[-1].strip().rstrip(',').strip()
+                # Extract outlet name from query - handle various formats
+                outlet_name = query
+                if '–' in outlet_name:
+                    outlet_name = outlet_name.split('–')[-1].strip()
+                if '-' in outlet_name and 'zus' not in outlet_name.lower():
+                    outlet_name = outlet_name.split('-')[-1].strip()
+                outlet_name = outlet_name.rstrip(',').strip()
                 
                 matched_outlet = _find_best_outlet_match(outlet_name, last_outlets) if last_outlets else None
                 
@@ -215,15 +221,38 @@ async def chat(request: ChatRequest) -> ChatResponse:
                             memory_manager.update_context(session_id, "last_outlets", outlets)
                 
                 if matched_outlet:
-                    hours = matched_outlet.get('hours', 'Not available')
                     name = matched_outlet.get('name', outlet_name)
-                    response_text = f"Ah yes, the {name} opens at {hours}." if hours != 'Not available' else f"Sorry, I don't have the opening hours for {name}."
+                    if followup == "hours":
+                        hours = matched_outlet.get('hours', 'Not available')
+                        response_text = f"Ah yes, the {name} opens at {hours}." if hours != 'Not available' else f"Sorry, I don't have the opening hours for {name}."
+                    elif followup == "open_time":
+                        hours = matched_outlet.get('hours', 'Not available')
+                        if hours != 'Not available':
+                            opening_time = _extract_opening_time(hours)
+                            response_text = f"Ah yes, the {name} opens at {opening_time}." if opening_time else f"Ah yes, the {name} hours are {hours}."
+                        else:
+                            response_text = f"Sorry, I don't have the opening time for {name}."
+                    elif followup == "close_time":
+                        hours = matched_outlet.get('hours', 'Not available')
+                        if hours != 'Not available':
+                            closing_time = _extract_closing_time(hours)
+                            response_text = f"Ah yes, the {name} closes at {closing_time}." if closing_time else f"Ah yes, the {name} hours are {hours}."
+                        else:
+                            response_text = f"Sorry, I don't have the closing time for {name}."
+                    elif followup == "services":
+                        services = matched_outlet.get('services', 'Not available')
+                        if services and services != 'Not available':
+                            response_text = f"Yes, the {name} offers: {services}."
+                        else:
+                            response_text = f"Sorry, I don't have service information for {name}."
+                    else:
+                        response_text = f"I found information about {name}."
                 else:
                     response_text = f"Sorry, I couldn't find information about '{outlet_name}'."
                 
                 tool_calls.append({
                     "tool": "outlets",
-                    "input": {"query": query, "followup": "hours"},
+                    "input": {"query": query, "followup": followup},
                     "output": {"success": True, "result": matched_outlet} if matched_outlet else {"success": False}
                 })
             else:
@@ -289,7 +318,13 @@ def _find_best_outlet_match(query: str, available_outlets: List[Dict[str, Any]])
     """
     query_lower = query.lower().strip()
     # Normalize spaces for matching (e.g., "ss 2" -> "ss2")
-    query_normalized = query_lower.replace(' ', '')
+    query_normalized = query_lower.replace(' ', '').replace('–', '').replace('-', '')
+    
+    # Extract key words from query (ignore common words)
+    query_words = [w for w in query_lower.split() if len(w) > 2 and w not in ['the', 'and', 'for', 'are', 'has', 'have']]
+    
+    best_match = None
+    best_score = 0
     
     for outlet in available_outlets:
         outlet_name = outlet.get('name', '').lower()
@@ -297,15 +332,73 @@ def _find_best_outlet_match(query: str, available_outlets: List[Dict[str, Any]])
         outlet_district = outlet.get('district', '').lower()
         
         # Normalize outlet names for comparison
-        outlet_name_normalized = outlet_name.replace(' ', '')
-        outlet_location_normalized = outlet_location.replace(' ', '')
+        outlet_name_normalized = outlet_name.replace(' ', '').replace('–', '').replace('-', '')
+        outlet_location_normalized = outlet_location.replace(' ', '').replace('–', '').replace('-', '')
         
-        # Exact match (with or without spaces)
-        if (query_lower in outlet_name or query_lower in outlet_location or 
-            query_normalized in outlet_name_normalized or query_normalized in outlet_location_normalized or
-            query_lower in outlet_district):
-            return outlet
+        score = 0
+        
+        # Exact match (highest priority)
+        if query_lower == outlet_name or query_normalized == outlet_name_normalized:
+            score = 100
+        # Query is contained in outlet name
+        elif query_lower in outlet_name or query_normalized in outlet_name_normalized:
+            score = 90
+        # Query is contained in location
+        elif query_lower in outlet_location or query_normalized in outlet_location_normalized:
+            score = 70
+        # Query is contained in district
+        elif query_lower in outlet_district:
+            score = 60
+        # Word-based matching
+        elif query_words:
+            name_matches = sum(1 for word in query_words if word in outlet_name)
+            location_matches = sum(1 for word in query_words if word in outlet_location)
+            district_matches = sum(1 for word in query_words if word in outlet_district)
+            score = (name_matches * 20) + (location_matches * 10) + (district_matches * 5)
+        
+        if score > best_score:
+            best_score = score
+            best_match = outlet
     
+    # Only return if we have a reasonable match (score >= 20)
+    return best_match if best_score >= 20 else None
+
+
+def _extract_opening_time(hours: str) -> Optional[str]:
+    """
+    Extract opening time from hours string.
+    Expected format: "9:00 AM - 10:00 PM" or similar.
+    Returns the opening time (first part before the dash).
+    """
+    if not hours or hours == 'Not available':
+        return None
+    
+    # Split by common separators
+    parts = re.split(r'\s*[-–]\s*', hours.strip(), maxsplit=1)
+    if len(parts) >= 1:
+        opening = parts[0].strip()
+        # Clean up any extra text
+        opening = re.sub(r'^(opens?|open\s+at|from)\s*', '', opening, flags=re.IGNORECASE).strip()
+        return opening if opening else None
+    return None
+
+
+def _extract_closing_time(hours: str) -> Optional[str]:
+    """
+    Extract closing time from hours string.
+    Expected format: "9:00 AM - 10:00 PM" or similar.
+    Returns the closing time (second part after the dash).
+    """
+    if not hours or hours == 'Not available':
+        return None
+    
+    # Split by common separators
+    parts = re.split(r'\s*[-–]\s*', hours.strip(), maxsplit=1)
+    if len(parts) >= 2:
+        closing = parts[1].strip()
+        # Clean up any extra text
+        closing = re.sub(r'^(closes?|close\s+at|until|to)\s*', '', closing, flags=re.IGNORECASE).strip()
+        return closing if closing else None
     return None
 
 
