@@ -283,13 +283,27 @@ def _get_clarification_message(intent: str, missing_slots: List[str]) -> str:
 
 
 def _find_best_outlet_match(query: str, available_outlets: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    """
+    Find the best matching outlet from available outlets.
+    Handles variations like "SS 2" vs "SS2".
+    """
     query_lower = query.lower().strip()
+    # Normalize spaces for matching (e.g., "ss 2" -> "ss2")
+    query_normalized = query_lower.replace(' ', '')
     
     for outlet in available_outlets:
         outlet_name = outlet.get('name', '').lower()
         outlet_location = outlet.get('location', '').lower()
+        outlet_district = outlet.get('district', '').lower()
         
-        if query_lower in outlet_name or query_lower in outlet_location:
+        # Normalize outlet names for comparison
+        outlet_name_normalized = outlet_name.replace(' ', '')
+        outlet_location_normalized = outlet_location.replace(' ', '')
+        
+        # Exact match (with or without spaces)
+        if (query_lower in outlet_name or query_lower in outlet_location or 
+            query_normalized in outlet_name_normalized or query_normalized in outlet_location_normalized or
+            query_lower in outlet_district):
             return outlet
     
     return None

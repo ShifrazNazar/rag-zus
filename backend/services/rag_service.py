@@ -112,8 +112,18 @@ class RAGService:
             except Exception as e:
                 logger.error(f"Error loading {json_file}: {e}")
         
-        logger.info(f"Loaded {len(products)} products total")
-        return products
+        # Filter to only drinkware (Tumbler and Mugs) as per assignment requirements
+        drinkware_categories = ["Tumbler", "Mugs"]
+        filtered_products = [
+            p for p in products 
+            if p.get("category") in drinkware_categories
+        ]
+        
+        if len(filtered_products) < len(products):
+            logger.info(f"Filtered {len(products) - len(filtered_products)} non-drinkware products. Keeping {len(filtered_products)} drinkware items.")
+        
+        logger.info(f"Loaded {len(filtered_products)} drinkware products total")
+        return filtered_products
     
     def _chunk_text(self, text: str, max_size: int) -> List[str]:
         """

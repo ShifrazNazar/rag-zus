@@ -1,0 +1,389 @@
+{
+  "products": [
+    {
+      "name": "OG Cup 2.0 | 500ml",
+      "description": "Sip and savour each and every note.What makes our OG Cup 2.0 so special?It’s leak proof, comes with a screw-on lid for that no mess experience, and a ceramic interior that better preserves flavours so you can savour every note of your drink.Now available in three colours: Thunder Blue, Space Black, and Lucky Pink.",
+      "price": "RM79.00",
+      "category": "Tumbler",
+      "url": "https://shop.zuscoffee.com/products/zus-og-cup-2-0-with-screw-on-lid",
+      "id": 1
+    },
+    {
+      "name": "All-Can Tumbler | 600ml",
+      "description": "Your companion through the day.Need a tumbler that’ll stick with you through a long office day or exhausting gym session?Calling All-Can Tumbler! With interchangeable lids—screw-on for your hot americano, flip-top for your iced sips—and a good 8 hours of perfectly preserved temperatures, this tumbler is perfect to take on-the-go.Whether you’re in the humid jungle or a freezing office, All-Can is with you through it all.",
+      "price": "from RM63.00",
+      "category": "Tumbler",
+      "url": "https://shop.zuscoffee.com/products/zus-all-can-tumbler-600ml-20oz",
+      "id": 2
+    },
+    {
+      "name": "All Day Cup Sundaze | 500ml",
+      "description": "Your drinks All Day, everyday.Sunkissed skin, sandy beaches, and breezy shores—our Sundaze collection brings the seaside to you in three shades to inspire the serene beauty of the sea, the sand, and the stretch of space in between.",
+      "price": "from RM55.30",
+      "category": "Tumbler",
+      "url": "https://shop.zuscoffee.com/products/all-day-cup-500ml-17oz-sundaze-collection",
+      "id": 3
+    },
+    {
+      "name": "All Day Cup | 500ml",
+      "description": "Your drinks All Day, everyday.This tumbler’s more than a way to sip on delicious drinks. With a leak proof, dual-purpose lid, your hot or iced drinks will be kept perfectly preserved for up to 16 hours so youcanenjoy each sip like it’s the first.Pair your All Day Cup with gorgeous accessories for a colourful upgrade.",
+      "price": "from RM63.20",
+      "category": "Tumbler",
+      "url": "https://shop.zuscoffee.com/products/all-day-cup-500ml-17oz",
+      "id": 4
+    },
+    {
+      "name": "Frozee Cold Cup | 650ml",
+      "description": "Embrace the chill.Whether you’re a frappe-lover or simply adore iced drinks, our Frozee Cold Cup will keep your drink cold for longer thanks to its double wall insulation. Not to mention, our straws are reusable and our lids are spill-proof—no messes allowed here.",
+      "price": "from RM38.50",
+      "category": "Tumbler",
+      "url": "https://shop.zuscoffee.com/products/frozee-cold-cup-650ml-22oz",
+      "id": 5
+    },
+    {
+      "name": "OG Ceramic Mug | 470ml",
+      "description": "Minimalist mug for delicious sips.Our OG Ceramic Mug makes those small moments all the more comfortable. High-quality ceramic blends effortlessly with an ergonomic handle for an easy grip—ensuring you get the ultimate cosy experience with style and practicality.",
+      "price": "RM39.00",
+      "category": "Mugs",
+      "url": "https://shop.zuscoffee.com/products/zus-og-ceramic-mug-470ml",
+      "id": 6
+    },
+    {
+      "name": "All Day Cup Mountain | 500ml",
+      "description": "Your drinks All Day, everyday.Maybe quietude and constancy are your mottos, or you feel at home amongst the fresh, clean air of higher altitudes. As steadfast as the tall trees, you’ve got a grounded confidence about you that speaks of surety, of someone who knows what they want and moves to achieve it.",
+      "price": "RM79.00",
+      "category": "Tumbler",
+      "url": "https://shop.zuscoffee.com/products/all-day-cup-500ml-17oz-mountain-collection",
+      "id": 7
+    },
+    {
+      "name": "All Day Cup Aqua | 500ml",
+      "description": "Your drinks All Day, everyday.When you’re the life of the party, you’ll find yourself gravitating towards experiences that can be shared with others. You’re like the endless water: expansive, an adventure waiting to unfold. You’re never in one place when there’s a whole world out there.",
+      "price": "RM79.00",
+      "category": "Tumbler",
+      "url": "https://shop.zuscoffee.com/products/all-day-cup-500ml-17oz-aqua-collection",
+      "id": 8
+    },
+    {
+      "name": "Stainless Steel Mug | 420ml",
+      "description": "Coffee smells better outdoors.Does it? I guess it's time to find out! Made for those who cherish the outdoors or simply just prefer sipping their coffee through a mug. Made from durable 304 stainless steel, features double-wall vacuum insulation to keep your drinks hot or cold up to 5 hours.No matter where your journey takes you—whether it’s a roadside coffee break to \"heal\" or a moment in the mountains surrounded by good company—we’re more than just a mug for great coffee. We’re the small comfo...",
+      "price": "RM59.00",
+      "category": "Mugs",
+      "url": "https://shop.zuscoffee.com/products/zus-stainless-steel-mug-420ml",
+      "id": 9
+    },
+    {
+      "name": "All Day Cup Corak (Tiga Sekawan Bundle) | 500ml",
+      "description": "Your drinks All Day, everyday.Show your appreciation of our local arts with the Tiga Sekawan bundle in three variations, inspired by the vibrant culture and history of our country’s thirteen states.This bundle features:Corak Malaysia All Day CupCorak Malaysia Cup SleeveCorak Malaysia Reusable Straw Kit",
+      "price": "RM100.40",
+      "category": "Tumbler",
+      "url": "https://shop.zuscoffee.com/products/corak-malaysia-tiga-sekawan-bundle",
+      "id": 10
+    },
+    {
+      "name": "All Day Cup Sunset | 500ml",
+      "description": "Your drinks All Day, everyday.Mature, intentional, and always present, you’re the definition of timeless grace and quiet strength. As golden as the rays that close the day, you’re in your element when things are balanced—whether it’s ambition and mental health or rest and results.",
+      "price": "RM79.00",
+      "category": "Tumbler",
+      "url": "https://shop.zuscoffee.com/products/all-day-cup-500ml-17oz-sunset-collection",
+      "id": 14
+    },
+    {
+      "name": "All Day Cup Sunrise | 500ml",
+      "description": "Your drinks All Day, everyday.You’re not just the caretaker of your group, you’re the one they turn to when times are tough. Like the soft rise of the sun, your rays of warmth are strong and steady, and you can always be counted on as someone who’s always there.",
+      "price": "RM79.00",
+      "category": "Tumbler",
+      "url": "https://shop.zuscoffee.com/products/all-day-cup-500ml-17oz-sunrise-collection",
+      "id": 15
+    },
+    {
+      "name": "[Corak Malaysia] All Day Cup",
+      "description": "Your drinks All Day, everyday.PELIKATA collaboration between ZUS and UiTM,Pelikat's takes inspiration from a104-year-old checkered sarongand its history passed down through generations..MAHARANIMaharani draws from classic heritage motifs, blending ten intricate patterns that symbolise elegance and cultural pride.BUNGA LADONamed after the pepper flower, Bunga Lado carries a motif deeply rooted in local traditions, symbolising resilience and cultural identity..LAWANGANInspired by Lawangan, a tradi...",
+      "price": "RM79.00",
+      "category": "Tumbler",
+      "url": "https://shop.zuscoffee.com/products/corak-malaysia-all-day-cup",
+      "id": 16
+    },
+    {
+      "name": "[Corak Malaysia] Dwi Sejoli",
+      "description": "Make everyday a day to celebrate our heritage.Our Dwi Sejoli comes in three new inspired variations of the Corak Malaysia series, perfect for you to show off your love for the vibrancy of our culture and art.This bundle features:Corak Malaysia All Day CupCorak Malaysia Cup Sleeve",
+      "price": "RM112.00",
+      "category": "Tumbler",
+      "url": "https://shop.zuscoffee.com/products/corak-malaysia-dwi-sejoli",
+      "id": 17
+    },
+    {
+      "name": "[Corak Malaysia] Triloka Warisan",
+      "description": "Make everyday a day to celebrate our heritage.Our Triloka Warisan comes in three new inspired variations of the Corak Malaysia series, perfect for you to show off your love for the vibrancy of our culture and art.This bundle features:Corak Malaysia All Day CupCorak Malaysia Cup SleeveCorak Malaysia Bandana",
+      "price": "from RM111.00",
+      "category": "Tumbler",
+      "url": "https://shop.zuscoffee.com/products/corak-malaysia-triloka-warisan",
+      "id": 18
+    },
+    {
+      "name": "[Corak Malaysia] Dwi Lestari",
+      "description": "Make everyday a day to celebrate our heritage.Our Dwi Lestari comes in three new inspired variations of the Corak Malaysia series, perfect for you to show off your love for the vibrancy of our culture and art.This bundle features:Corak Malaysia All Day CupCorak Malaysia Bandana",
+      "price": "RM112.00",
+      "category": "Tumbler",
+      "url": "https://shop.zuscoffee.com/products/corak-malaysia-dwi-lestari",
+      "id": 19
+    },
+    {
+      "name": "All Day Cup Classic | 500ml",
+      "description": "A classic way to enjoy your drinks All Day, everyday.Inspired by the colours that make ZUS® so recognisable. From the silver of our coffee machines, the black of the freshest Americano, and the iconic blue of ZUS®, these are the classic colours every fan needs to show off their love.TrueCoat coating is only available for Space Black and ZUS® Blue.",
+      "price": "from RM79.00",
+      "category": "Tumbler",
+      "url": "https://shop.zuscoffee.com/products/all-day-cup-classic-500ml",
+      "id": 20
+    }
+  ],
+  "chunks": [
+    {
+      "product_id": 1,
+      "product_name": "OG Cup 2.0 | 500ml",
+      "text": "Tumbler Sip and savour each and every note.What makes our OG Cup 2.0 so special?It’s leak proof, comes with a screw-on lid for that no mess experience, and a ceramic interior that better preserves flavours so you can savour every note of your drink.Now available in three colours: Thunder Blue, Space Black, and Lucky Pink.",
+      "product": {
+        "name": "OG Cup 2.0 | 500ml",
+        "description": "Sip and savour each and every note.What makes our OG Cup 2.0 so special?It’s leak proof, comes with a screw-on lid for that no mess experience, and a ceramic interior that better preserves flavours so you can savour every note of your drink.Now available in three colours: Thunder Blue, Space Black, and Lucky Pink.",
+        "price": "RM79.00",
+        "category": "Tumbler",
+        "url": "https://shop.zuscoffee.com/products/zus-og-cup-2-0-with-screw-on-lid",
+        "id": 1
+      }
+    },
+    {
+      "product_id": 2,
+      "product_name": "All-Can Tumbler | 600ml",
+      "text": "Tumbler Your companion through the day.Need a tumbler that’ll stick with you through a long office day or exhausting gym session?Calling All-Can Tumbler! With interchangeable lids—screw-on for your hot americano, flip-top for your iced sips—and a good 8 hours of perfectly preserved temperatures, this tumbler is perfect to take on-the-go.Whether you’re in the humid jungle or a freezing office, All-Can is with you through it all.",
+      "product": {
+        "name": "All-Can Tumbler | 600ml",
+        "description": "Your companion through the day.Need a tumbler that’ll stick with you through a long office day or exhausting gym session?Calling All-Can Tumbler! With interchangeable lids—screw-on for your hot americano, flip-top for your iced sips—and a good 8 hours of perfectly preserved temperatures, this tumbler is perfect to take on-the-go.Whether you’re in the humid jungle or a freezing office, All-Can is with you through it all.",
+        "price": "from RM63.00",
+        "category": "Tumbler",
+        "url": "https://shop.zuscoffee.com/products/zus-all-can-tumbler-600ml-20oz",
+        "id": 2
+      }
+    },
+    {
+      "product_id": 3,
+      "product_name": "All Day Cup Sundaze | 500ml",
+      "text": "Tumbler Your drinks All Day, everyday.Sunkissed skin, sandy beaches, and breezy shores—our Sundaze collection brings the seaside to you in three shades to inspire the serene beauty of the sea, the sand, and the stretch of space in between.",
+      "product": {
+        "name": "All Day Cup Sundaze | 500ml",
+        "description": "Your drinks All Day, everyday.Sunkissed skin, sandy beaches, and breezy shores—our Sundaze collection brings the seaside to you in three shades to inspire the serene beauty of the sea, the sand, and the stretch of space in between.",
+        "price": "from RM55.30",
+        "category": "Tumbler",
+        "url": "https://shop.zuscoffee.com/products/all-day-cup-500ml-17oz-sundaze-collection",
+        "id": 3
+      }
+    },
+    {
+      "product_id": 4,
+      "product_name": "All Day Cup | 500ml",
+      "text": "Tumbler Your drinks All Day, everyday.This tumbler’s more than a way to sip on delicious drinks. With a leak proof, dual-purpose lid, your hot or iced drinks will be kept perfectly preserved for up to 16 hours so youcanenjoy each sip like it’s the first.Pair your All Day Cup with gorgeous accessories for a colourful upgrade.",
+      "product": {
+        "name": "All Day Cup | 500ml",
+        "description": "Your drinks All Day, everyday.This tumbler’s more than a way to sip on delicious drinks. With a leak proof, dual-purpose lid, your hot or iced drinks will be kept perfectly preserved for up to 16 hours so youcanenjoy each sip like it’s the first.Pair your All Day Cup with gorgeous accessories for a colourful upgrade.",
+        "price": "from RM63.20",
+        "category": "Tumbler",
+        "url": "https://shop.zuscoffee.com/products/all-day-cup-500ml-17oz",
+        "id": 4
+      }
+    },
+    {
+      "product_id": 5,
+      "product_name": "Frozee Cold Cup | 650ml",
+      "text": "Tumbler Embrace the chill.Whether you’re a frappe-lover or simply adore iced drinks, our Frozee Cold Cup will keep your drink cold for longer thanks to its double wall insulation. Not to mention, our straws are reusable and our lids are spill-proof—no messes allowed here.",
+      "product": {
+        "name": "Frozee Cold Cup | 650ml",
+        "description": "Embrace the chill.Whether you’re a frappe-lover or simply adore iced drinks, our Frozee Cold Cup will keep your drink cold for longer thanks to its double wall insulation. Not to mention, our straws are reusable and our lids are spill-proof—no messes allowed here.",
+        "price": "from RM38.50",
+        "category": "Tumbler",
+        "url": "https://shop.zuscoffee.com/products/frozee-cold-cup-650ml-22oz",
+        "id": 5
+      }
+    },
+    {
+      "product_id": 6,
+      "product_name": "OG Ceramic Mug | 470ml",
+      "text": "Mugs Minimalist mug for delicious sips.Our OG Ceramic Mug makes those small moments all the more comfortable. High-quality ceramic blends effortlessly with an ergonomic handle for an easy grip—ensuring you get the ultimate cosy experience with style and practicality.",
+      "product": {
+        "name": "OG Ceramic Mug | 470ml",
+        "description": "Minimalist mug for delicious sips.Our OG Ceramic Mug makes those small moments all the more comfortable. High-quality ceramic blends effortlessly with an ergonomic handle for an easy grip—ensuring you get the ultimate cosy experience with style and practicality.",
+        "price": "RM39.00",
+        "category": "Mugs",
+        "url": "https://shop.zuscoffee.com/products/zus-og-ceramic-mug-470ml",
+        "id": 6
+      }
+    },
+    {
+      "product_id": 7,
+      "product_name": "All Day Cup Mountain | 500ml",
+      "text": "Tumbler Your drinks All Day, everyday.Maybe quietude and constancy are your mottos, or you feel at home amongst the fresh, clean air of higher altitudes. As steadfast as the tall trees, you’ve got a grounded confidence about you that speaks of surety, of someone who knows what they want and moves to achieve it.",
+      "product": {
+        "name": "All Day Cup Mountain | 500ml",
+        "description": "Your drinks All Day, everyday.Maybe quietude and constancy are your mottos, or you feel at home amongst the fresh, clean air of higher altitudes. As steadfast as the tall trees, you’ve got a grounded confidence about you that speaks of surety, of someone who knows what they want and moves to achieve it.",
+        "price": "RM79.00",
+        "category": "Tumbler",
+        "url": "https://shop.zuscoffee.com/products/all-day-cup-500ml-17oz-mountain-collection",
+        "id": 7
+      }
+    },
+    {
+      "product_id": 8,
+      "product_name": "All Day Cup Aqua | 500ml",
+      "text": "Tumbler Your drinks All Day, everyday.When you’re the life of the party, you’ll find yourself gravitating towards experiences that can be shared with others. You’re like the endless water: expansive, an adventure waiting to unfold. You’re never in one place when there’s a whole world out there.",
+      "product": {
+        "name": "All Day Cup Aqua | 500ml",
+        "description": "Your drinks All Day, everyday.When you’re the life of the party, you’ll find yourself gravitating towards experiences that can be shared with others. You’re like the endless water: expansive, an adventure waiting to unfold. You’re never in one place when there’s a whole world out there.",
+        "price": "RM79.00",
+        "category": "Tumbler",
+        "url": "https://shop.zuscoffee.com/products/all-day-cup-500ml-17oz-aqua-collection",
+        "id": 8
+      }
+    },
+    {
+      "product_id": 9,
+      "product_name": "Stainless Steel Mug | 420ml",
+      "text": "Mugs Coffee smells better outdoors.Does it? I guess it's time to find out! Made for those who cherish the outdoors or simply just prefer sipping their coffee through a mug. Made from durable 304 stainless steel, features double-wall vacuum insulation to keep your drinks hot or cold up to 5 hours.No matter where your journey takes you—whether it’s a roadside coffee break to \"heal\" or a moment in the mountains surrounded by good company—we’re more than just a mug for great coffee. We’re the small",
+      "product": {
+        "name": "Stainless Steel Mug | 420ml",
+        "description": "Coffee smells better outdoors.Does it? I guess it's time to find out! Made for those who cherish the outdoors or simply just prefer sipping their coffee through a mug. Made from durable 304 stainless steel, features double-wall vacuum insulation to keep your drinks hot or cold up to 5 hours.No matter where your journey takes you—whether it’s a roadside coffee break to \"heal\" or a moment in the mountains surrounded by good company—we’re more than just a mug for great coffee. We’re the small comfo...",
+        "price": "RM59.00",
+        "category": "Mugs",
+        "url": "https://shop.zuscoffee.com/products/zus-stainless-steel-mug-420ml",
+        "id": 9
+      }
+    },
+    {
+      "product_id": 9,
+      "product_name": "Stainless Steel Mug | 420ml",
+      "text": "comfo...",
+      "product": {
+        "name": "Stainless Steel Mug | 420ml",
+        "description": "Coffee smells better outdoors.Does it? I guess it's time to find out! Made for those who cherish the outdoors or simply just prefer sipping their coffee through a mug. Made from durable 304 stainless steel, features double-wall vacuum insulation to keep your drinks hot or cold up to 5 hours.No matter where your journey takes you—whether it’s a roadside coffee break to \"heal\" or a moment in the mountains surrounded by good company—we’re more than just a mug for great coffee. We’re the small comfo...",
+        "price": "RM59.00",
+        "category": "Mugs",
+        "url": "https://shop.zuscoffee.com/products/zus-stainless-steel-mug-420ml",
+        "id": 9
+      }
+    },
+    {
+      "product_id": 10,
+      "product_name": "All Day Cup Corak (Tiga Sekawan Bundle) | 500ml",
+      "text": "Tumbler Your drinks All Day, everyday.Show your appreciation of our local arts with the Tiga Sekawan bundle in three variations, inspired by the vibrant culture and history of our country’s thirteen states.This bundle features:Corak Malaysia All Day CupCorak Malaysia Cup SleeveCorak Malaysia Reusable Straw Kit",
+      "product": {
+        "name": "All Day Cup Corak (Tiga Sekawan Bundle) | 500ml",
+        "description": "Your drinks All Day, everyday.Show your appreciation of our local arts with the Tiga Sekawan bundle in three variations, inspired by the vibrant culture and history of our country’s thirteen states.This bundle features:Corak Malaysia All Day CupCorak Malaysia Cup SleeveCorak Malaysia Reusable Straw Kit",
+        "price": "RM100.40",
+        "category": "Tumbler",
+        "url": "https://shop.zuscoffee.com/products/corak-malaysia-tiga-sekawan-bundle",
+        "id": 10
+      }
+    },
+    {
+      "product_id": 14,
+      "product_name": "All Day Cup Sunset | 500ml",
+      "text": "Tumbler Your drinks All Day, everyday.Mature, intentional, and always present, you’re the definition of timeless grace and quiet strength. As golden as the rays that close the day, you’re in your element when things are balanced—whether it’s ambition and mental health or rest and results.",
+      "product": {
+        "name": "All Day Cup Sunset | 500ml",
+        "description": "Your drinks All Day, everyday.Mature, intentional, and always present, you’re the definition of timeless grace and quiet strength. As golden as the rays that close the day, you’re in your element when things are balanced—whether it’s ambition and mental health or rest and results.",
+        "price": "RM79.00",
+        "category": "Tumbler",
+        "url": "https://shop.zuscoffee.com/products/all-day-cup-500ml-17oz-sunset-collection",
+        "id": 14
+      }
+    },
+    {
+      "product_id": 15,
+      "product_name": "All Day Cup Sunrise | 500ml",
+      "text": "Tumbler Your drinks All Day, everyday.You’re not just the caretaker of your group, you’re the one they turn to when times are tough. Like the soft rise of the sun, your rays of warmth are strong and steady, and you can always be counted on as someone who’s always there.",
+      "product": {
+        "name": "All Day Cup Sunrise | 500ml",
+        "description": "Your drinks All Day, everyday.You’re not just the caretaker of your group, you’re the one they turn to when times are tough. Like the soft rise of the sun, your rays of warmth are strong and steady, and you can always be counted on as someone who’s always there.",
+        "price": "RM79.00",
+        "category": "Tumbler",
+        "url": "https://shop.zuscoffee.com/products/all-day-cup-500ml-17oz-sunrise-collection",
+        "id": 15
+      }
+    },
+    {
+      "product_id": 16,
+      "product_name": "[Corak Malaysia] All Day Cup",
+      "text": "Tumbler Your drinks All Day, everyday.PELIKATA collaboration between ZUS and UiTM,Pelikat's takes inspiration from a104-year-old checkered sarongand its history passed down through generations..MAHARANIMaharani draws from classic heritage motifs, blending ten intricate patterns that symbolise elegance and cultural pride.BUNGA LADONamed after the pepper flower, Bunga Lado carries a motif deeply rooted in local traditions, symbolising resilience and cultural identity..LAWANGANInspired by",
+      "product": {
+        "name": "[Corak Malaysia] All Day Cup",
+        "description": "Your drinks All Day, everyday.PELIKATA collaboration between ZUS and UiTM,Pelikat's takes inspiration from a104-year-old checkered sarongand its history passed down through generations..MAHARANIMaharani draws from classic heritage motifs, blending ten intricate patterns that symbolise elegance and cultural pride.BUNGA LADONamed after the pepper flower, Bunga Lado carries a motif deeply rooted in local traditions, symbolising resilience and cultural identity..LAWANGANInspired by Lawangan, a tradi...",
+        "price": "RM79.00",
+        "category": "Tumbler",
+        "url": "https://shop.zuscoffee.com/products/corak-malaysia-all-day-cup",
+        "id": 16
+      }
+    },
+    {
+      "product_id": 16,
+      "product_name": "[Corak Malaysia] All Day Cup",
+      "text": "Lawangan, a tradi...",
+      "product": {
+        "name": "[Corak Malaysia] All Day Cup",
+        "description": "Your drinks All Day, everyday.PELIKATA collaboration between ZUS and UiTM,Pelikat's takes inspiration from a104-year-old checkered sarongand its history passed down through generations..MAHARANIMaharani draws from classic heritage motifs, blending ten intricate patterns that symbolise elegance and cultural pride.BUNGA LADONamed after the pepper flower, Bunga Lado carries a motif deeply rooted in local traditions, symbolising resilience and cultural identity..LAWANGANInspired by Lawangan, a tradi...",
+        "price": "RM79.00",
+        "category": "Tumbler",
+        "url": "https://shop.zuscoffee.com/products/corak-malaysia-all-day-cup",
+        "id": 16
+      }
+    },
+    {
+      "product_id": 17,
+      "product_name": "[Corak Malaysia] Dwi Sejoli",
+      "text": "Tumbler Make everyday a day to celebrate our heritage.Our Dwi Sejoli comes in three new inspired variations of the Corak Malaysia series, perfect for you to show off your love for the vibrancy of our culture and art.This bundle features:Corak Malaysia All Day CupCorak Malaysia Cup Sleeve",
+      "product": {
+        "name": "[Corak Malaysia] Dwi Sejoli",
+        "description": "Make everyday a day to celebrate our heritage.Our Dwi Sejoli comes in three new inspired variations of the Corak Malaysia series, perfect for you to show off your love for the vibrancy of our culture and art.This bundle features:Corak Malaysia All Day CupCorak Malaysia Cup Sleeve",
+        "price": "RM112.00",
+        "category": "Tumbler",
+        "url": "https://shop.zuscoffee.com/products/corak-malaysia-dwi-sejoli",
+        "id": 17
+      }
+    },
+    {
+      "product_id": 18,
+      "product_name": "[Corak Malaysia] Triloka Warisan",
+      "text": "Tumbler Make everyday a day to celebrate our heritage.Our Triloka Warisan comes in three new inspired variations of the Corak Malaysia series, perfect for you to show off your love for the vibrancy of our culture and art.This bundle features:Corak Malaysia All Day CupCorak Malaysia Cup SleeveCorak Malaysia Bandana",
+      "product": {
+        "name": "[Corak Malaysia] Triloka Warisan",
+        "description": "Make everyday a day to celebrate our heritage.Our Triloka Warisan comes in three new inspired variations of the Corak Malaysia series, perfect for you to show off your love for the vibrancy of our culture and art.This bundle features:Corak Malaysia All Day CupCorak Malaysia Cup SleeveCorak Malaysia Bandana",
+        "price": "from RM111.00",
+        "category": "Tumbler",
+        "url": "https://shop.zuscoffee.com/products/corak-malaysia-triloka-warisan",
+        "id": 18
+      }
+    },
+    {
+      "product_id": 19,
+      "product_name": "[Corak Malaysia] Dwi Lestari",
+      "text": "Tumbler Make everyday a day to celebrate our heritage.Our Dwi Lestari comes in three new inspired variations of the Corak Malaysia series, perfect for you to show off your love for the vibrancy of our culture and art.This bundle features:Corak Malaysia All Day CupCorak Malaysia Bandana",
+      "product": {
+        "name": "[Corak Malaysia] Dwi Lestari",
+        "description": "Make everyday a day to celebrate our heritage.Our Dwi Lestari comes in three new inspired variations of the Corak Malaysia series, perfect for you to show off your love for the vibrancy of our culture and art.This bundle features:Corak Malaysia All Day CupCorak Malaysia Bandana",
+        "price": "RM112.00",
+        "category": "Tumbler",
+        "url": "https://shop.zuscoffee.com/products/corak-malaysia-dwi-lestari",
+        "id": 19
+      }
+    },
+    {
+      "product_id": 20,
+      "product_name": "All Day Cup Classic | 500ml",
+      "text": "Tumbler A classic way to enjoy your drinks All Day, everyday.Inspired by the colours that make ZUS® so recognisable. From the silver of our coffee machines, the black of the freshest Americano, and the iconic blue of ZUS®, these are the classic colours every fan needs to show off their love.TrueCoat coating is only available for Space Black and ZUS® Blue.",
+      "product": {
+        "name": "All Day Cup Classic | 500ml",
+        "description": "A classic way to enjoy your drinks All Day, everyday.Inspired by the colours that make ZUS® so recognisable. From the silver of our coffee machines, the black of the freshest Americano, and the iconic blue of ZUS®, these are the classic colours every fan needs to show off their love.TrueCoat coating is only available for Space Black and ZUS® Blue.",
+        "price": "from RM79.00",
+        "category": "Tumbler",
+        "url": "https://shop.zuscoffee.com/products/all-day-cup-classic-500ml",
+        "id": 20
+      }
+    }
+  ]
+}

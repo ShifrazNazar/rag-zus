@@ -62,7 +62,66 @@ class AgentPlanner:
                 "missing_slots": []
             }
         
+        # Try LLM-based classification if available
+        if self.llm is not None:
+            try:
+                return self._llm_classify_intent(user_input, memory)
+            except Exception as e:
+                logger.warning(f"LLM intent classification failed: {e}, falling back to rule-based")
+        
+        # Fallback to rule-based classification
         return self._rule_based_classify_intent(user_input, memory)
+    
+    def _llm_classify_intent(self, user_input: str, memory: Dict[str, Any]) -> Dict[str, Any]:
+        """Use LLM to classify intent and extract slots."""
+        try:
+            from langchain_core.prompts import ChatPromptTemplate
+            
+            prompt = ChatPromptTemplate.from_messages([
+                ("system", """You are an intent classifier for a ZUS Coffee chatbot. 
+                Classify the user's intent into one of these categories:
+                - calculator: Mathematical calculations (e.g., "2+2", "calculate 10*5")
+                - product_search: Searching for products (e.g., "show me tumblers", "find mugs")
+                - outlet_query: Finding outlets/locations (e.g., "outlets in Petaling Jaya", "SS 2 opening hours")
+                - general_chat: General conversation
+                
+                Extract relevant slots:
+                - For calculator: "expression" (the math expression)
+                - For product_search: "query" (search terms)
+                - For outlet_query: "query" (location/outlet name)
+                
+                Return JSON with: intent, confidence (0-1), slots (dict), missing_slots (list)"""),
+                ("human", "User input: {user_input}\n\nContext: {context}")
+            ])
+            
+            context = f"Last outlets: {memory.get('context', {}).get('last_outlets', [])[:3]}"
+            
+            chain = prompt | self.llm
+            response = chain.invoke({
+                "user_input": user_input,
+                "context": context
+            })
+            
+            # Parse LLM response (assuming JSON format)
+            import json
+            content = response.content if hasattr(response, 'content') else str(response)
+            
+            # Try to extract JSON from response
+            json_match = re.search(r'\{[^{}]*\}', content)
+            if json_match:
+                result = json.loads(json_match.group())
+                # Validate result structure
+                if result.get("intent") in [self.INTENT_CALCULATOR, self.INTENT_PRODUCTS, 
+                                           self.INTENT_OUTLETS, self.INTENT_CHAT]:
+                    return result
+            
+            # If parsing fails, fall back to rule-based
+            logger.warning("Failed to parse LLM response, using rule-based classification")
+            return self._rule_based_classify_intent(user_input, memory)
+            
+        except Exception as e:
+            logger.error(f"Error in LLM intent classification: {e}", exc_info=True)
+            return self._rule_based_classify_intent(user_input, memory)
     
     def _rule_based_classify_intent(self, user_input: str, memory: Dict[str, Any]) -> Dict[str, Any]:
         user_lower = user_input.lower()
@@ -146,8 +205,9 @@ class AgentPlanner:
             return extracted_name
         
         outlet_keywords = {
-            'ss': 'SS 2',
-            'ss2': 'SS 2',
+            'ss': 'SS2',  # Updated to match actual outlet name
+            'ss2': 'SS2',  # Updated to match actual outlet name
+            'ss 2': 'SS2',  # Handle space variant
             'utama': '1 Utama',
             'klcc': 'KLCC',
             'pavilion': 'Pavilion',

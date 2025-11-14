@@ -239,7 +239,7 @@ SQL Query:
         
         # Handle specific outlet name queries (use smaller limit)
         if 'ss' in query_lower and ('2' in query_lower or 'ss2' in query_lower):
-            return "SELECT * FROM outlets WHERE name LIKE '%SS%' OR location LIKE '%SS%' OR location LIKE '%SS 2%' LIMIT 10"
+            return "SELECT * FROM outlets WHERE name LIKE '%SS%' OR name LIKE '%SS 2%' OR location LIKE '%SS%' OR location LIKE '%SS 2%' LIMIT 10"
         elif '1' in query_lower and 'utama' in query_lower:
             return "SELECT * FROM outlets WHERE name LIKE '%1 Utama%' OR location LIKE '%1 Utama%' OR location LIKE '%Bandar Utama%' LIMIT 10"
         elif 'klcc' in query_lower:
@@ -262,8 +262,10 @@ SQL Query:
         elif 'all' in query_lower or 'list' in query_lower:
             return "SELECT * FROM outlets ORDER BY name LIMIT 200"
         else:
-            # Generic search in name and location - return more results
-            return f"SELECT * FROM outlets WHERE name LIKE '%{query}%' OR location LIKE '%{query}%' OR district LIKE '%{query}%' ORDER BY name LIMIT 200"
+            # For generic searches, escape single quotes to prevent SQL injection
+            # SQLAlchemy text() will execute this safely as it's a read-only SELECT
+            safe_query = query.replace("'", "''")  # Escape single quotes for SQL
+            return f"SELECT * FROM outlets WHERE name LIKE '%{safe_query}%' OR location LIKE '%{safe_query}%' OR district LIKE '%{safe_query}%' ORDER BY name LIMIT 200"
     
     def execute_query(self, sql: str) -> List[Dict[str, Any]]:
         """
