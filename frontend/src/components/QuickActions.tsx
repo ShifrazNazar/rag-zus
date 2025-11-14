@@ -2,10 +2,10 @@ import { Button } from "./ui/button";
 import { Calculator, ShoppingBag, MapPin, RotateCcw } from "lucide-react";
 
 const actions = [
-  { label: "Calculator", action: "What can you calculate?", icon: Calculator },
-  { label: "Products", action: "Show me products", icon: ShoppingBag },
-  { label: "Outlets", action: "Find outlets near me", icon: MapPin },
-  { label: "Reset", action: "reset", icon: RotateCcw },
+  { label: "Calculator", action: "/calc", icon: Calculator },
+  { label: "Products", action: "/products", icon: ShoppingBag },
+  { label: "Outlets", action: "/outlets", icon: MapPin },
+  { label: "Reset", action: "/reset", icon: RotateCcw },
 ];
 
 interface QuickActionsProps {

@@ -53,7 +53,7 @@ export default function InputComposer({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask about outlets, products, or calculations... (Enter to send, Shift+Enter for newline)"
+            placeholder="Ask about outlets, products, or calculations... (Enter to send, Shift+Enter for newline, / to see quick actions)"
             disabled={disabled}
             rows={1}
             className="resize-none min-h-[52px] max-h-[120px] border-border/60 focus:border-primary/50 focus:ring-primary/20"
