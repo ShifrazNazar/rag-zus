@@ -1,0 +1,39 @@
+@startuml Chat Flow Diagram
+!theme plain
+skinparam backgroundColor #FFFFFF
+
+title Mindhive Chatbot - Core Flow
+
+actor User
+participant "Frontend" as Frontend
+participant "Chat API" as API
+participant "Agent Planner" as Planner
+participant "Memory" as Memory
+participant "Tools" as Tools
+
+User -> Frontend: Send message
+Frontend -> API: POST /chat
+
+API -> Memory: Get conversation state
+Memory --> API: Return history & context
+
+API -> Planner: Analyze intent
+activate Planner
+Planner --> API: Intent + slots
+deactivate Planner
+
+alt Missing parameters
+    API --> Frontend: Ask clarification
+else Valid intent
+    API -> Tools: Call tool\n(Calculator/Products/Outlets)
+    activate Tools
+    Tools --> API: Tool result
+    deactivate Tools
+    
+    API -> Memory: Update conversation
+    API --> Frontend: Send response
+end
+
+Frontend -> User: Display message
+
+@enduml

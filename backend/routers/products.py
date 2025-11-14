@@ -31,9 +31,11 @@ async def search_products(
             query_lower = query.lower().strip()
             if not query_lower or query_lower in ['all products', 'all', 'show all', 'list all', 'products', '/products']:
                 top_k = 50
+            elif any(specific in query_lower for specific in ['og cup', 'all day cup', 'all-can', 'frozee', 'og ceramic']):
+                top_k = 5
             elif any(keyword in query_lower for keyword in ['tumbler', 'tumblers', 'mug', 'mugs', 'cup', 'cups', 
                                                            'accessories', 'collectibles']):
-                top_k = 15
+                top_k = 25
             else:
                 top_k = 5
         

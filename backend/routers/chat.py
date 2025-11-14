@@ -97,13 +97,13 @@ def format_products_response(tool_result: Dict[str, Any]) -> str:
         return "I couldn't find any products matching your search."
     
     response = f"I found {len(results)} product(s):\n"
-    for i, product in enumerate(results[:10], 1):
+    for i, product in enumerate(results[:20], 1):
         response += f"{i}. {product.get('name', 'Unknown')}"
         if product.get("price"):
             response += f" - {product.get('price')}"
         response += "\n"
-    if len(results) > 10:
-        response += f"... and {len(results) - 10} more.\n"
+    if len(results) > 20:
+        response += f"... and {len(results) - 20} more.\n"
     return response.strip()
 
 
@@ -120,7 +120,7 @@ def format_outlets_response(tool_result: Dict[str, Any]) -> str:
         outlet = results[0]
         return f"Yes! I found {outlet.get('name', 'Unknown')} at {outlet.get('location', 'Unknown')}. Hours: {outlet.get('hours', 'Not available')}"
     
-    MAX_DISPLAY = 15
+    MAX_DISPLAY = 20
     response = f"Yes! I found {len(results)} outlet(s):\n"
     for i, outlet in enumerate(results[:MAX_DISPLAY], 1):
         name = outlet.get('name', 'Unknown')
