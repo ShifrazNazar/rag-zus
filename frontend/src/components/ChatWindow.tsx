@@ -2,13 +2,9 @@ import { useChat } from "../hooks/useChat";
 import MessageList from "./MessageList";
 import InputComposer from "./InputComposer";
 import QuickActions from "./QuickActions";
-import BackendStatus from "./BackendStatus";
-import { Alert, AlertDescription } from "./ui/alert";
-import { AlertCircle, RefreshCw } from "lucide-react";
-import { Button } from "./ui/button";
 
 export default function ChatWindow() {
-  const { messages, isLoading, error, sendMessage, clearChat } = useChat();
+  const { messages, isLoading, sendMessage, clearChat } = useChat();
 
   const handleSend = async (message: string) => {
     if (
@@ -25,24 +21,23 @@ export default function ChatWindow() {
     <div className="flex flex-col h-screen bg-gradient-to-br from-[#F5F1EB] via-background to-[#F0E8DC]">
       <div className="border-b border-border/40 bg-gradient-to-r from-[#F5F1EB] to-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full"></div>
-                <div className="relative w-10 h-10 bg-primary rounded-lg flex items-center justify-center transform rotate-[-55deg]">
-                  <span className="text-primary-foreground font-bold text-xl">Z</span>
-                </div>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                  ZUS Coffee Assistant
-                </h1>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  Your personal coffee shop guide • Find outlets, products & more
-                </p>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full"></div>
+              <div className="relative w-10 h-10 bg-primary rounded-lg flex items-center justify-center transform rotate-[-55deg]">
+                <span className="text-primary-foreground font-bold text-xl">
+                  Z
+                </span>
               </div>
             </div>
-            <BackendStatus />
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                ZUS Coffee Assistant
+              </h1>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Your personal coffee shop guide • Find outlets, products & more
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -52,26 +47,6 @@ export default function ChatWindow() {
           <QuickActions onAction={handleSend} disabled={isLoading} />
         </div>
       </div>
-
-      {error && (
-        <div className="max-w-4xl mx-auto w-full px-4 pt-4">
-          <Alert variant="destructive" className="border-destructive/50">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="flex items-center justify-between">
-              <span>{error}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => window.location.reload()}
-                className="ml-2 h-7"
-              >
-                <RefreshCw className="h-3 w-3 mr-1.5" />
-                Reload
-              </Button>
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
 
       <div className="flex-1 overflow-hidden min-h-0">
         <div className="max-w-4xl mx-auto h-full flex flex-col">

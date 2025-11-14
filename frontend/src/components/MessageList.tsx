@@ -28,10 +28,18 @@ export default function MessageList({ messages, isLoading }: MessageListProps) {
         </div>
       ) : (
         <>
-          <div className="space-y-1">
-            {messages.map((message, index) => (
-              <MessageBubble key={index} message={message} />
-            ))}
+          <div className="space-y-4">
+            {messages.map((message, index) => {
+              // Show conversation threading - group consecutive messages from same role
+              const prevMessage = index > 0 ? messages[index - 1] : null;
+              const isNewThread = !prevMessage || prevMessage.role !== message.role;
+              
+              return (
+                <div key={index} className={isNewThread && index > 0 ? "mt-6" : ""}>
+                  <MessageBubble message={message} />
+                </div>
+              );
+            })}
           </div>
           {isLoading && (
             <div className="flex justify-start mb-4">

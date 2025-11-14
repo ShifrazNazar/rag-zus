@@ -33,12 +33,16 @@ export default function InputComposer({
       e.preventDefault();
       handleSend();
     }
+    // Shift+Enter allows newline (default textarea behavior)
   };
 
   const showAutocomplete = message.trim().startsWith("/");
-  const filteredActions = QUICK_ACTIONS.filter((action) =>
-    action.toLowerCase().includes(message.trim().toLowerCase())
-  );
+  const filteredActions = QUICK_ACTIONS.filter((action) => {
+    const messageLower = message.trim().toLowerCase();
+    const actionLower = action.toLowerCase();
+    // Show all actions when just "/" is typed, filter when more characters are typed
+    return messageLower === "/" || actionLower.includes(messageLower.slice(1));
+  });
 
   return (
     <div className="p-4">
@@ -49,7 +53,7 @@ export default function InputComposer({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask about outlets, products, or calculations..."
+            placeholder="Ask about outlets, products, or calculations... (Enter to send, Shift+Enter for newline)"
             disabled={disabled}
             rows={1}
             className="resize-none min-h-[52px] max-h-[120px] border-border/60 focus:border-primary/50 focus:ring-primary/20"

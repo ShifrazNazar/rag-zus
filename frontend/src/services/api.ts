@@ -7,7 +7,11 @@ export interface ChatMessage {
   tool_calls?: Array<{
     tool: string;
     input: Record<string, any>;
-    output: Record<string, any>;
+    output: {
+      success: boolean;
+      result?: any;
+      error?: string;
+    };
   }>;
   intent?: string;
 }
@@ -22,7 +26,11 @@ export interface ChatResponse {
   tool_calls?: Array<{
     tool: string;
     input: Record<string, any>;
-    output: Record<string, any>;
+    output: {
+      success: boolean;
+      result?: any;
+      error?: string;
+    };
   }>;
   intent?: string;
   memory?: Record<string, any>;
@@ -169,12 +177,3 @@ export async function searchOutlets(query: string): Promise<OutletsResponse> {
   }
 }
 
-export async function checkHealth(): Promise<boolean> {
-  try {
-    const response = await fetch(`${API_URL}/health`);
-    return response.ok;
-  } catch (error) {
-    console.error("Health check failed:", error);
-    return false;
-  }
-}
