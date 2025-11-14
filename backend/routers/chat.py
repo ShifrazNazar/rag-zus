@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Union
 from fastapi import APIRouter, HTTPException
 
 from models.schemas import ChatRequest, ChatResponse, ChatMessage, CalculatorRequest
@@ -121,13 +121,19 @@ def format_outlets_response(tool_result: Dict[str, Any]) -> str:
         outlet = results[0]
         return f"Yes! I found {outlet.get('name', 'Unknown')} at {outlet.get('location', 'Unknown')}. Hours: {outlet.get('hours', 'Not available')}"
     
-    # Multiple results - show first 10
+    # Multiple results - show first 15
+    MAX_DISPLAY = 15
     response = f"Yes! I found {len(results)} outlet(s):\n"
-    for i, outlet in enumerate(results[:10], 1):
-        response += f"{i}. {outlet.get('name', 'Unknown')} - {outlet.get('location', 'Unknown')}\n"
-    if len(results) > 10:
-        response += f"... and {len(results) - 10} more.\n"
-    response += "\nWhich outlet are you referring to?"
+    for i, outlet in enumerate(results[:MAX_DISPLAY], 1):
+        name = outlet.get('name', 'Unknown')
+        location = outlet.get('location', 'Unknown')
+        # Avoid duplication if name already contains location or they're the same
+        if name == location or location in name:
+            response += f"{i}. {name}\n"
+        else:
+            response += f"{i}. {name} - {location}\n"
+    if len(results) > MAX_DISPLAY:
+        response += f"... and {len(results) - MAX_DISPLAY} more.\n"
     return response
 
 
@@ -199,8 +205,9 @@ async def chat(request: ChatRequest) -> ChatResponse:
         elif action == "call_outlets":
             query = slots.get("query", request.message)
             followup = slots.get("followup")
+            logger.info(f"Outlet query: '{query}', followup: '{followup}'")
             
-            if followup in ["hours", "open_time", "close_time", "services"]:
+            if followup in ["hours", "open_time", "close_time", "services", "location"]:
                 last_outlets = memory_manager.get_context(session_id, "last_outlets", [])
                 # Extract outlet name from query - handle various formats
                 outlet_name = query
@@ -245,6 +252,16 @@ async def chat(request: ChatRequest) -> ChatResponse:
                             response_text = f"Yes, the {name} offers: {services}."
                         else:
                             response_text = f"Sorry, I don't have service information for {name}."
+                    elif followup == "location":
+                        location = matched_outlet.get('location', 'Not available')
+                        district = matched_outlet.get('district', '')
+                        if location and location != 'Not available':
+                            if district and district != location:
+                                response_text = f"The {name} is located at {location}, {district}."
+                            else:
+                                response_text = f"The {name} is located at {location}."
+                        else:
+                            response_text = f"Sorry, I don't have location information for {name}."
                     else:
                         response_text = f"I found information about {name}."
                 else:
@@ -268,7 +285,10 @@ async def chat(request: ChatRequest) -> ChatResponse:
                     outlets = tool_result["result"]["results"]
                     memory_manager.update_context(session_id, "last_outlets", outlets)
                     if len(outlets) > 1:
-                        response_text = response_text.rstrip() + "\n\nWhich outlet are you referring to?"
+                        if len(outlets) > 20:
+                            response_text = response_text.rstrip() + "\n\nThere are many outlets. Please specify a location (e.g., 'outlets in Petaling Jaya') to narrow down the results."
+                        else:
+                            response_text = response_text.rstrip() + "\n\nWhich outlet are you referring to?"
             
         else:
             response_text = _get_general_response(request.message, intent)

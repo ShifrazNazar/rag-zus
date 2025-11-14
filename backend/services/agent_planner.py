@@ -88,7 +88,10 @@ class AgentPlanner:
                 Extract relevant slots:
                 - For calculator: "expression" (the math expression)
                 - For product_search: "query" (search terms)
-                - For outlet_query: "query" (location/outlet name)
+                - For outlet_query: "query" (location/outlet name), "followup" (if asking about hours/services/location: "hours", "open_time", "close_time", "services", or "location")
+                
+                IMPORTANT: Return ONLY valid JSON. Example for outlet services query:
+                {{"intent": "outlet_query", "confidence": 0.9, "slots": {{"query": "outlet name", "followup": "services"}}, "missing_slots": []}}
                 
                 Return JSON with: intent, confidence (0-1), slots (dict), missing_slots (list)"""),
                 ("human", "User input: {user_input}\n\nContext: {context}")
@@ -106,16 +109,37 @@ class AgentPlanner:
             import json
             content = response.content if hasattr(response, 'content') else str(response)
             
-            # Try to extract JSON from response
-            json_match = re.search(r'\{[^{}]*\}', content)
-            if json_match:
-                result = json.loads(json_match.group())
-                # Validate result structure
+            # Try multiple JSON extraction strategies
+            result = None
+            
+            # Strategy 1: Try to find JSON object with nested structures
+            json_patterns = [
+                r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}',  # Nested JSON
+                r'\{[^}]*\}',  # Simple JSON
+            ]
+            
+            for pattern in json_patterns:
+                json_match = re.search(pattern, content, re.DOTALL)
+                if json_match:
+                    try:
+                        result = json.loads(json_match.group())
+                        # Validate result structure
+                        if result.get("intent") in [self.INTENT_CALCULATOR, self.INTENT_PRODUCTS, 
+                                                   self.INTENT_OUTLETS, self.INTENT_CHAT]:
+                            return result
+                    except json.JSONDecodeError:
+                        continue
+            
+            # Strategy 2: Try parsing the entire content as JSON
+            try:
+                result = json.loads(content.strip())
                 if result.get("intent") in [self.INTENT_CALCULATOR, self.INTENT_PRODUCTS, 
                                            self.INTENT_OUTLETS, self.INTENT_CHAT]:
                     return result
+            except json.JSONDecodeError:
+                pass
             
-            # If parsing fails, fall back to rule-based
+            # If parsing fails, fall back to rule-based (user_input is already corrected)
             logger.warning("Failed to parse LLM response, using rule-based classification")
             return self._rule_based_classify_intent(user_input, memory)
             
@@ -126,10 +150,10 @@ class AgentPlanner:
     def _rule_based_classify_intent(self, user_input: str, memory: Dict[str, Any]) -> Dict[str, Any]:
         user_lower = user_input.lower()
         
-        # Check for outlet-related queries first (hours, services, etc.)
+        # Check for outlet-related queries first (hours, services, location, etc.)
         outlet_keywords = ['hour', 'time', 'open', 'close', 'when', 'opening', 'closing', 
                           'service', 'services', 'drive through', 'drive-through', 'wifi', 
-                          'dine-in', 'dine in', 'what are the services', 'have']
+                          'dine-in', 'dine in', 'what are the services', 'have', 'location', 'where', 'address']
         if any(keyword in user_lower for keyword in outlet_keywords):
             # Check if this is about an outlet
             last_outlets = memory.get("context", {}).get("last_outlets", [])
@@ -137,7 +161,9 @@ class AgentPlanner:
                 outlet_name = self._extract_outlet_name(user_input, last_outlets)
                 if outlet_name:
                     # Determine follow-up type
-                    if any(word in user_lower for word in ['service', 'services', 'drive through', 'wifi', 'dine']):
+                    if any(word in user_lower for word in ['location', 'where', 'address']):
+                        followup_type = "location"
+                    elif any(word in user_lower for word in ['service', 'services', 'drive through', 'wifi', 'dine']):
                         followup_type = "services"
                     elif any(word in user_lower for word in ['close', 'closing', 'close time', 'closing time']):
                         followup_type = "close_time"
