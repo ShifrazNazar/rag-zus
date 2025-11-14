@@ -89,7 +89,7 @@ pytest --cov=. --cov-report=html
 
 ## Deployment
 
-### Railway/Render
+### Render
 
 Set `GEMINI_API_KEY` environment variable. Health check: `/health`
 

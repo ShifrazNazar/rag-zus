@@ -21,10 +21,6 @@ Backend: `http://localhost:8000` | Frontend: `http://localhost:5173`
 
 **Note**: Set `GEMINI_API_KEY` in `docker-compose.yml` or `.env` file.
 
-### Manual Setup
-
-See [Backend README](backend/README.md) and [Frontend README](frontend/README.md) for detailed setup instructions.
-
 ## 📚 Documentation
 
 - **[Backend README](backend/README.md)** - API documentation, setup, and architecture
