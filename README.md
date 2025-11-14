@@ -9,6 +9,10 @@ Multi-agent chatbot with RAG, Text2SQL, tool calling, and custom React frontend.
 - ✅ **20 drinkware products** in FAISS vector store
 - ✅ **209 outlets** in SQLite database
 
+## Live
+FE: https://rag-zus.vercel.app
+BE: https://rag-zus.onrender.com
+
 ## 🚀 Quick Start
 
 ### Docker (Recommended)
