@@ -1,12 +1,11 @@
 import logging
 import re
-from typing import Dict, Any, Optional, List, Union
+from typing import Dict, Any, Optional, List
 from fastapi import APIRouter, HTTPException
 
 from models.schemas import ChatRequest, ChatResponse, ChatMessage, CalculatorRequest
 from services.agent_planner import get_agent_planner, AgentPlanner
 from services.memory_manager import get_memory_manager
-from services.tool_executor import execute_tool
 
 from routers.calculator import calculate as calculate_endpoint
 from routers.products import search_products as search_products_endpoint
@@ -121,13 +120,11 @@ def format_outlets_response(tool_result: Dict[str, Any]) -> str:
         outlet = results[0]
         return f"Yes! I found {outlet.get('name', 'Unknown')} at {outlet.get('location', 'Unknown')}. Hours: {outlet.get('hours', 'Not available')}"
     
-    # Multiple results - show first 15
     MAX_DISPLAY = 15
     response = f"Yes! I found {len(results)} outlet(s):\n"
     for i, outlet in enumerate(results[:MAX_DISPLAY], 1):
         name = outlet.get('name', 'Unknown')
         location = outlet.get('location', 'Unknown')
-        # Avoid duplication if name already contains location or they're the same
         if name == location or location in name:
             response += f"{i}. {name}\n"
         else:
@@ -209,7 +206,6 @@ async def chat(request: ChatRequest) -> ChatResponse:
             
             if followup in ["hours", "open_time", "close_time", "services", "location"]:
                 last_outlets = memory_manager.get_context(session_id, "last_outlets", [])
-                # Extract outlet name from query - handle various formats
                 outlet_name = query
                 if '–' in outlet_name:
                     outlet_name = outlet_name.split('–')[-1].strip()
@@ -332,15 +328,8 @@ def _get_clarification_message(intent: str, missing_slots: List[str]) -> str:
 
 
 def _find_best_outlet_match(query: str, available_outlets: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
-    """
-    Find the best matching outlet from available outlets.
-    Handles variations like "SS 2" vs "SS2".
-    """
     query_lower = query.lower().strip()
-    # Normalize spaces for matching (e.g., "ss 2" -> "ss2")
     query_normalized = query_lower.replace(' ', '').replace('–', '').replace('-', '')
-    
-    # Extract key words from query (ignore common words)
     query_words = [w for w in query_lower.split() if len(w) > 2 and w not in ['the', 'and', 'for', 'are', 'has', 'have']]
     
     best_match = None
@@ -357,19 +346,14 @@ def _find_best_outlet_match(query: str, available_outlets: List[Dict[str, Any]])
         
         score = 0
         
-        # Exact match (highest priority)
         if query_lower == outlet_name or query_normalized == outlet_name_normalized:
             score = 100
-        # Query is contained in outlet name
         elif query_lower in outlet_name or query_normalized in outlet_name_normalized:
             score = 90
-        # Query is contained in location
         elif query_lower in outlet_location or query_normalized in outlet_location_normalized:
             score = 70
-        # Query is contained in district
         elif query_lower in outlet_district:
             score = 60
-        # Word-based matching
         elif query_words:
             name_matches = sum(1 for word in query_words if word in outlet_name)
             location_matches = sum(1 for word in query_words if word in outlet_location)
@@ -380,43 +364,28 @@ def _find_best_outlet_match(query: str, available_outlets: List[Dict[str, Any]])
             best_score = score
             best_match = outlet
     
-    # Only return if we have a reasonable match (score >= 20)
     return best_match if best_score >= 20 else None
 
 
 def _extract_opening_time(hours: str) -> Optional[str]:
-    """
-    Extract opening time from hours string.
-    Expected format: "9:00 AM - 10:00 PM" or similar.
-    Returns the opening time (first part before the dash).
-    """
     if not hours or hours == 'Not available':
         return None
     
-    # Split by common separators
     parts = re.split(r'\s*[-–]\s*', hours.strip(), maxsplit=1)
     if len(parts) >= 1:
         opening = parts[0].strip()
-        # Clean up any extra text
         opening = re.sub(r'^(opens?|open\s+at|from)\s*', '', opening, flags=re.IGNORECASE).strip()
         return opening if opening else None
     return None
 
 
 def _extract_closing_time(hours: str) -> Optional[str]:
-    """
-    Extract closing time from hours string.
-    Expected format: "9:00 AM - 10:00 PM" or similar.
-    Returns the closing time (second part after the dash).
-    """
     if not hours or hours == 'Not available':
         return None
     
-    # Split by common separators
     parts = re.split(r'\s*[-–]\s*', hours.strip(), maxsplit=1)
     if len(parts) >= 2:
         closing = parts[1].strip()
-        # Clean up any extra text
         closing = re.sub(r'^(closes?|close\s+at|until|to)\s*', '', closing, flags=re.IGNORECASE).strip()
         return closing if closing else None
     return None

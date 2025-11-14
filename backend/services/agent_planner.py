@@ -73,7 +73,6 @@ class AgentPlanner:
         return self._rule_based_classify_intent(user_input, memory)
     
     def _llm_classify_intent(self, user_input: str, memory: Dict[str, Any]) -> Dict[str, Any]:
-        """Use LLM to classify intent and extract slots."""
         try:
             from langchain_core.prompts import ChatPromptTemplate
             
@@ -105,17 +104,13 @@ class AgentPlanner:
                 "context": context
             })
             
-            # Parse LLM response (assuming JSON format)
             import json
             content = response.content if hasattr(response, 'content') else str(response)
             
-            # Try multiple JSON extraction strategies
             result = None
-            
-            # Strategy 1: Try to find JSON object with nested structures
             json_patterns = [
-                r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}',  # Nested JSON
-                r'\{[^}]*\}',  # Simple JSON
+                r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}',
+                r'\{[^}]*\}',
             ]
             
             for pattern in json_patterns:
@@ -123,14 +118,12 @@ class AgentPlanner:
                 if json_match:
                     try:
                         result = json.loads(json_match.group())
-                        # Validate result structure
                         if result.get("intent") in [self.INTENT_CALCULATOR, self.INTENT_PRODUCTS, 
                                                    self.INTENT_OUTLETS, self.INTENT_CHAT]:
                             return result
                     except json.JSONDecodeError:
                         continue
             
-            # Strategy 2: Try parsing the entire content as JSON
             try:
                 result = json.loads(content.strip())
                 if result.get("intent") in [self.INTENT_CALCULATOR, self.INTENT_PRODUCTS, 
@@ -139,7 +132,6 @@ class AgentPlanner:
             except json.JSONDecodeError:
                 pass
             
-            # If parsing fails, fall back to rule-based (user_input is already corrected)
             logger.warning("Failed to parse LLM response, using rule-based classification")
             return self._rule_based_classify_intent(user_input, memory)
             
@@ -150,17 +142,14 @@ class AgentPlanner:
     def _rule_based_classify_intent(self, user_input: str, memory: Dict[str, Any]) -> Dict[str, Any]:
         user_lower = user_input.lower()
         
-        # Check for outlet-related queries first (hours, services, location, etc.)
         outlet_keywords = ['hour', 'time', 'open', 'close', 'when', 'opening', 'closing', 
                           'service', 'services', 'drive through', 'drive-through', 'wifi', 
                           'dine-in', 'dine in', 'what are the services', 'have', 'location', 'where', 'address']
         if any(keyword in user_lower for keyword in outlet_keywords):
-            # Check if this is about an outlet
             last_outlets = memory.get("context", {}).get("last_outlets", [])
             if last_outlets or 'zus' in user_lower or 'outlet' in user_lower:
                 outlet_name = self._extract_outlet_name(user_input, last_outlets)
                 if outlet_name:
-                    # Determine follow-up type
                     if any(word in user_lower for word in ['location', 'where', 'address']):
                         followup_type = "location"
                     elif any(word in user_lower for word in ['service', 'services', 'drive through', 'wifi', 'dine']):
@@ -178,8 +167,6 @@ class AgentPlanner:
                         "missing_slots": []
                     }
         
-        # Check for calculator - be more specific to avoid matching outlet names
-        # Only match if it looks like a math expression, not just contains a dash
         math_pattern = r'(?:^|\s)(?:\d+\s*[+\-*/]\s*\d+|calculate|compute|what is|what\'s|math|plus|minus|times|multiply|divide)(?:\s|$)'
         if re.search(math_pattern, user_lower) and not any(word in user_lower for word in ['outlet', 'zus', 'coffee', 'petaling', 'jaya', 'kl', 'kuala', 'lumpur']):
             expression = self._extract_expression(user_input)
@@ -190,7 +177,9 @@ class AgentPlanner:
                 "missing_slots": ["expression"] if not expression else []
             }
         
-        if re.search(r'product|item|tumbler|mug|bottle|drinkware|buy|purchase', user_lower):
+        product_keywords = ['product', 'item', 'tumbler', 'mug', 'bottle', 'drinkware', 'buy', 'purchase', 
+                           'cup', 'cups', 'og cup', 'all day', 'frozee', 'all-can', 'ceramic', 'steel']
+        if any(keyword in user_lower for keyword in product_keywords):
             query = self._extract_product_query(user_input)
             return {
                 "intent": self.INTENT_PRODUCTS,
@@ -236,8 +225,6 @@ class AgentPlanner:
     
     def _extract_outlet_name(self, text: str, available_outlets: List[Dict[str, Any]]) -> Optional[str]:
         text_lower = text.lower()
-        
-        # First, try to match full outlet name patterns
         full_outlet_pattern = r'zus\s+coffee\s*[–\-]\s*([^,?\n]+)'
         match = re.search(full_outlet_pattern, text_lower, re.IGNORECASE)
         if match:
@@ -248,24 +235,19 @@ class AgentPlanner:
                     return best_match.get('name', extracted_name)
             return extracted_name
         
-        # Check if the text contains a known outlet name from available outlets
         if available_outlets:
-            # Try to find outlet name in the text
             for outlet in available_outlets:
                 outlet_name = outlet.get('name', '').lower()
-                # Check if outlet name (or significant parts) appears in the text
                 outlet_words = [w for w in outlet_name.split() if len(w) > 2 and w not in ['zus', 'coffee']]
                 if outlet_words:
-                    # Check if key words from outlet name appear in text
                     matches = sum(1 for word in outlet_words if word in text_lower)
                     if matches >= 2 or (matches == 1 and len(outlet_words) == 1):
                         return outlet.get('name')
         
-        # Handle common outlet keywords
         outlet_keywords = {
-            'ss': 'SS2',  # Updated to match actual outlet name
-            'ss2': 'SS2',  # Updated to match actual outlet name
-            'ss 2': 'SS2',  # Handle space variant
+            'ss': 'SS2',
+            'ss2': 'SS2',
+            'ss 2': 'SS2',
             'utama': '1 Utama',
             'klcc': 'KLCC',
             'pavilion': 'Pavilion',
@@ -285,7 +267,6 @@ class AgentPlanner:
                             return outlet.get('name', default_name)
                 return default_name
         
-        # Try to extract outlet name by removing common question words
         if available_outlets:
             cleaned = re.sub(r'(what|what\'s|what are|the|opening|hours?|time|when|is|there|an|outlet|in|zus\s+coffee|have|services?|service)', '', text_lower, flags=re.IGNORECASE)
             cleaned = cleaned.strip().strip('–-,').strip()

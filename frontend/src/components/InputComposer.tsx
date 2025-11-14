@@ -33,14 +33,12 @@ export default function InputComposer({
       e.preventDefault();
       handleSend();
     }
-    // Shift+Enter allows newline (default textarea behavior)
   };
 
   const showAutocomplete = message.trim().startsWith("/");
   const filteredActions = QUICK_ACTIONS.filter((action) => {
     const messageLower = message.trim().toLowerCase();
     const actionLower = action.toLowerCase();
-    // Show all actions when just "/" is typed, filter when more characters are typed
     return messageLower === "/" || actionLower.includes(messageLower.slice(1));
   });
 

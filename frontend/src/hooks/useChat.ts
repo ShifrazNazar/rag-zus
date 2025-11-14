@@ -27,8 +27,6 @@ export function useChat(): UseChatReturn {
         role: msg.role,
         content: msg.content,
         timestamp: msg.timestamp,
-        // Note: tool_calls and intent are not persisted as they're metadata
-        // that can be regenerated from the conversation context
       }));
       setMessages(chatMessages);
     }

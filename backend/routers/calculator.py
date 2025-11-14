@@ -73,4 +73,3 @@ async def calculate(request: CalculatorRequest) -> CalculatorResponse:
     except Exception as e:
         logger.error(f"Error calculating: {e}", exc_info=True)
         return CalculatorResponse(result=None, error="An error occurred while evaluating the expression")
-

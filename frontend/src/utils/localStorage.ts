@@ -37,12 +37,3 @@ export function clearChatHistory(): void {
     console.error("Error clearing chat history:", error);
   }
 }
-
-export function getChatHistorySize(): number {
-  try {
-    const stored = localStorage.getItem(CHAT_HISTORY_KEY);
-    return stored ? JSON.parse(stored).length : 0;
-  } catch {
-    return 0;
-  }
-}

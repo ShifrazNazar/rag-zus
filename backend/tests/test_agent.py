@@ -187,3 +187,40 @@ def test_chat_tool_calls_present():
         assert "input" in tool_call
         assert "output" in tool_call
 
+
+def test_sequential_conversation_example_flow():
+    """Test Part 1 example flow: Petaling Jaya -> Which outlet -> SS 2 opening time"""
+    # Turn 1: "Is there an outlet in Petaling Jaya?"
+    response1 = client.post("/chat", json={
+        "message": "Is there an outlet in Petaling Jaya?",
+        "history": []
+    })
+    assert response1.status_code == 200
+    data1 = response1.json()
+    assert "response" in data1
+    assert "memory" in data1
+    assert data1["intent"] in ["outlet_query", "general_chat"]
+    
+    # Check that memory tracks context
+    memory1 = data1["memory"]
+    assert "context_keys" in memory1
+    
+    # Turn 2: "SS 2, what's the opening time?"
+    history = [
+        {"role": "user", "content": "Is there an outlet in Petaling Jaya?", "timestamp": None},
+        {"role": "assistant", "content": data1["response"], "timestamp": None}
+    ]
+    response2 = client.post("/chat", json={
+        "message": "SS 2, what's the opening time?",
+        "history": history
+    })
+    assert response2.status_code == 200
+    data2 = response2.json()
+    assert "response" in data2
+    assert "memory" in data2
+    
+    # Verify memory persists across turns
+    memory2 = data2["memory"]
+    assert "context_keys" in memory2
+    assert memory2["history_length"] >= 2
+

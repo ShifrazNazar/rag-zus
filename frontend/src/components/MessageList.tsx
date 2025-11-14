@@ -24,18 +24,23 @@ export default function MessageList({ messages, isLoading }: MessageListProps) {
             </div>
           </div>
           <p className="text-base">Start a conversation...</p>
-          <p className="text-sm mt-1 opacity-70">Ask about outlets, products, or calculations</p>
+          <p className="text-sm mt-1 opacity-70">
+            Ask about outlets, products, or calculations
+          </p>
         </div>
       ) : (
         <>
           <div className="space-y-4">
             {messages.map((message, index) => {
-              // Show conversation threading - group consecutive messages from same role
               const prevMessage = index > 0 ? messages[index - 1] : null;
-              const isNewThread = !prevMessage || prevMessage.role !== message.role;
-              
+              const isNewThread =
+                !prevMessage || prevMessage.role !== message.role;
+
               return (
-                <div key={index} className={isNewThread && index > 0 ? "mt-6" : ""}>
+                <div
+                  key={index}
+                  className={isNewThread && index > 0 ? "mt-6" : ""}
+                >
                   <MessageBubble message={message} />
                 </div>
               );
