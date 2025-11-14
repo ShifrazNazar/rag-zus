@@ -33,7 +33,7 @@ class AgentPlanner:
         if gemini_key and ChatGoogleGenerativeAI is not None:
             try:
                 self.llm = ChatGoogleGenerativeAI(
-                    model="gemini-pro",
+                    model="gemini-2.5-flash",
                     temperature=0,
                     google_api_key=gemini_key
                 )
@@ -63,57 +63,6 @@ class AgentPlanner:
             }
         
         return self._rule_based_classify_intent(user_input, memory)
-    
-    def _llm_classify_intent(self, user_input: str, memory: Dict[str, Any]) -> Dict[str, Any]:
-        try:
-            last_outlets = memory.get("context", {}).get("last_outlets", [])
-            context_info = ""
-            if last_outlets:
-                outlet_names = [o.get('name', '') for o in last_outlets[:3]]
-                context_info = f"\n\nPrevious context: User recently asked about outlets: {', '.join(outlet_names)}"
-            
-            prompt = ChatPromptTemplate.from_messages([
-                ("system", f"""You are an intent classifier for a chatbot. Classify the user's intent into one of:
-- calculator: User wants to perform a mathematical calculation
-- product_search: User wants to search for products
-- outlet_query: User wants to find outlet locations or ask about specific outlets (opening hours, details)
-- general_chat: General conversation, greetings, questions
-
-If the user is asking about opening hours, times, or details of a specific outlet mentioned in previous context, classify as outlet_query with followup: "hours" in slots.
-If the user mentions a location like "Petaling Jaya", "SS 2", "1 Utama", classify as outlet_query.{context_info}
-
-Respond with JSON: {{"intent": "intent_name", "confidence": 0.0-1.0, "slots": {{"key": "value", "followup": "hours" if asking about opening times}}}}"""),
-                ("user", "{user_input}")
-            ])
-            
-            chain = prompt | self.llm
-            response = chain.invoke({"user_input": user_input})
-            
-            # Parse response (simplified - in production, use structured output)
-            content = response.content if hasattr(response, 'content') else str(response)
-            
-            # Try to extract JSON
-            import json
-            try:
-                # Find JSON in response
-                json_match = re.search(r'\{[^}]+\}', content)
-                if json_match:
-                    result = json.loads(json_match.group())
-                    return {
-                        "intent": result.get("intent", self.INTENT_CHAT),
-                        "confidence": result.get("confidence", 0.5),
-                        "slots": result.get("slots", {}),
-                        "missing_slots": []
-                    }
-            except:
-                pass
-            
-            # Fallback to rule-based
-            return self._rule_based_classify_intent(user_input, memory)
-            
-        except Exception as e:
-            logger.error(f"Error in LLM intent classification: {e}", exc_info=True)
-            return self._rule_based_classify_intent(user_input, memory)
     
     def _rule_based_classify_intent(self, user_input: str, memory: Dict[str, Any]) -> Dict[str, Any]:
         user_lower = user_input.lower()
@@ -186,88 +135,38 @@ Respond with JSON: {{"intent": "intent_name", "confidence": 0.0-1.0, "slots": {{
     def _extract_outlet_name(self, text: str, available_outlets: List[Dict[str, Any]]) -> Optional[str]:
         text_lower = text.lower()
         
-        # First, try to extract full outlet name pattern "ZUS Coffee – [Name]"
         full_outlet_pattern = r'zus\s+coffee\s*[–\-]\s*([^,?\n]+)'
         match = re.search(full_outlet_pattern, text_lower, re.IGNORECASE)
         if match:
             extracted_name = match.group(1).strip()
-            # If we have available outlets, try to find exact or best match
             if available_outlets:
                 best_match = self._find_best_outlet_match(extracted_name, available_outlets)
                 if best_match:
                     return best_match.get('name', extracted_name)
-            # Return the extracted name (will be used in query)
             return extracted_name
         
-        # Common outlet name patterns (short names)
-        outlet_patterns = [
-            r'(ss\s*2|ss2)',
-            r'(1\s*utama|1utama)',
-            r'(klcc)',
-            r'(pavilion)',
-            r'(sunway\s*pyramid|sunway)',
-            r'(subang\s*jaya|subang)',
-            r'(damansara\s*perdana|damansara)'
-        ]
+        outlet_keywords = {
+            'ss': 'SS 2',
+            'ss2': 'SS 2',
+            'utama': '1 Utama',
+            'klcc': 'KLCC',
+            'pavilion': 'Pavilion',
+            'sunway': 'Sunway Pyramid',
+            'subang': 'Subang Jaya',
+            'damansara': 'Damansara Perdana'
+        }
         
-        # Try to match short patterns
-        for pattern in outlet_patterns:
-            match = re.search(pattern, text_lower, re.IGNORECASE)
-            if match:
-                matched_text = match.group(1).strip()
-                
-                # Normalize outlet names
-                if 'ss' in matched_text or 'ss2' in matched_text:
-                    # Look for SS 2 in available outlets
-                    if available_outlets:
-                        for outlet in available_outlets:
-                            outlet_name_lower = outlet.get('name', '').lower()
-                            if 'ss' in outlet_name_lower and '2' in outlet_name_lower:
-                                return outlet.get('name', matched_text)
-                    return "SS 2"
-                elif 'utama' in matched_text:
-                    if available_outlets:
-                        for outlet in available_outlets:
-                            if 'utama' in outlet.get('name', '').lower():
-                                return outlet.get('name', matched_text)
-                    return "1 Utama"
-                elif 'klcc' in matched_text:
-                    if available_outlets:
-                        for outlet in available_outlets:
-                            if 'klcc' in outlet.get('name', '').lower():
-                                return outlet.get('name', matched_text)
-                    return "KLCC"
-                elif 'pavilion' in matched_text:
-                    if available_outlets:
-                        for outlet in available_outlets:
-                            if 'pavilion' in outlet.get('name', '').lower():
-                                return outlet.get('name', matched_text)
-                    return "Pavilion"
-                elif 'sunway' in matched_text:
-                    if available_outlets:
-                        for outlet in available_outlets:
-                            if 'sunway' in outlet.get('name', '').lower():
-                                return outlet.get('name', matched_text)
-                    return "Sunway Pyramid"
-                elif 'subang' in matched_text:
-                    if available_outlets:
-                        for outlet in available_outlets:
-                            if 'subang' in outlet.get('name', '').lower():
-                                return outlet.get('name', matched_text)
-                    return "Subang Jaya"
-                elif 'damansara' in matched_text:
-                    if available_outlets:
-                        for outlet in available_outlets:
-                            if 'damansara' in outlet.get('name', '').lower():
-                                return outlet.get('name', matched_text)
-                    return "Damansara Perdana"
+        for keyword, default_name in outlet_keywords.items():
+            if keyword in text_lower:
+                if available_outlets:
+                    for outlet in available_outlets:
+                        if keyword in outlet.get('name', '').lower():
+                            return outlet.get('name', default_name)
+                return default_name
         
-        # If we have available outlets, try fuzzy matching with better scoring
         if available_outlets:
-            # Extract potential outlet name (remove common question words)
             cleaned = re.sub(r'(what|what\'s|the|opening|hours?|time|when|is|there|an|outlet|in|zus\s+coffee)', '', text_lower, flags=re.IGNORECASE)
             cleaned = cleaned.strip().strip('–-,').strip()
-            
             if cleaned:
                 best_match = self._find_best_outlet_match(cleaned, available_outlets)
                 if best_match:
@@ -276,17 +175,6 @@ Respond with JSON: {{"intent": "intent_name", "confidence": 0.0-1.0, "slots": {{
         return None
     
     def _find_best_outlet_match(self, query: str, available_outlets: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
-        """
-        Find the best matching outlet from available outlets based on query.
-        Uses scoring to find the most relevant match.
-        
-        Args:
-            query: Query text to match against
-            available_outlets: List of available outlet dictionaries
-            
-        Returns:
-            Best matching outlet dictionary or None
-        """
         query_lower = query.lower().strip()
         query_words = set(word for word in query_lower.split() if len(word) > 2)
         
@@ -297,44 +185,28 @@ Respond with JSON: {{"intent": "intent_name", "confidence": 0.0-1.0, "slots": {{
             outlet_name = outlet.get('name', '').lower()
             outlet_location = outlet.get('location', '').lower()
             
-            score = 0
-            
-            # Exact match gets highest score
             if query_lower in outlet_name:
                 score = 100
             elif query_lower in outlet_location:
                 score = 80
-            # Check if all query words are in outlet name (high score)
             elif query_words and all(word in outlet_name for word in query_words):
                 score = 70 + len(query_words) * 5
-            # Check if all query words are in location
             elif query_words and all(word in outlet_location for word in query_words):
                 score = 50 + len(query_words) * 5
-            # Partial word matches (lower score)
             elif query_words:
                 name_matches = sum(1 for word in query_words if word in outlet_name)
                 location_matches = sum(1 for word in query_words if word in outlet_location)
                 score = (name_matches * 10) + (location_matches * 5)
+            else:
+                continue
             
             if score > best_score:
                 best_score = score
                 best_match = outlet
         
-        # Only return match if score is above threshold
         return best_match if best_score >= 20 else None
     
     def select_action(self, intent: str, slots: Dict[str, Any], missing_slots: List[str]) -> str:
-        """
-        Select action based on intent and slots.
-        
-        Args:
-            intent: Detected intent
-            slots: Extracted slots
-            missing_slots: List of missing required slots
-            
-        Returns:
-            Action name
-        """
         if intent == self.INTENT_RESET:
             return "reset_memory"
         
@@ -351,12 +223,10 @@ Respond with JSON: {{"intent": "intent_name", "confidence": 0.0-1.0, "slots": {{
             return "general_response"
 
 
-# Global instance (singleton pattern)
 _agent_planner: Optional[AgentPlanner] = None
 
 
 def get_agent_planner() -> AgentPlanner:
-    """Get or create the global agent planner instance."""
     global _agent_planner
     if _agent_planner is None:
         _agent_planner = AgentPlanner()

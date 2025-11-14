@@ -75,7 +75,7 @@ class Text2SQLService:
             if gemini_key and ChatGoogleGenerativeAI is not None:
                 try:
                     self.llm = ChatGoogleGenerativeAI(
-                        model="gemini-pro",
+                        model="gemini-2.5-flash",
                         temperature=0,
                         google_api_key=gemini_key
                     )

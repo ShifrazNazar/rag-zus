@@ -32,8 +32,14 @@ export default function MessageList({ messages, isLoading }: MessageListProps) {
               <div className="bg-card border rounded-lg px-4 py-3">
                 <div className="flex space-x-1">
                   <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: "0.15s" }}></div>
-                  <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: "0.3s" }}></div>
+                  <div
+                    className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce"
+                    style={{ animationDelay: "0.15s" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce"
+                    style={{ animationDelay: "0.3s" }}
+                  ></div>
                 </div>
               </div>
             </div>

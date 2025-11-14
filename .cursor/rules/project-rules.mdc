@@ -11,18 +11,21 @@ Multi-agent chatbot with RAG, Text2SQL, tool calling, and custom React frontend.
 ## Tech Stack
 
 - **Backend**: FastAPI, LangChain, FAISS, SQLite, OpenAI/Anthropic API
-- **Frontend**: React (Vite), TailwindCSS, localStorage
-- **Testing**: pytest, jest/vitest
+- **Frontend**: React (Vite), TypeScript, TailwindCSS, shadcn/ui (Radix UI), localStorage
+- **Testing**: pytest (backend), vitest (frontend), @testing-library/react
 - **Deployment**: Backend on Railway/Render, Frontend on Vercel
+- **Containerization**: Docker, Docker Compose
 
 ## Project Structure
 
 ```
 mindhive-chatbot/
 ├── backend/
-│   ├── main.py                 # FastAPI app entry
+│   ├── main.py                 # FastAPI app entry with CORS, global exception handler
 │   ├── requirements.txt
-│   ├── .env.example
+│   ├── Dockerfile              # Backend containerization with health check
+│   ├── README.md               # Backend-specific documentation
+│   ├── pytest.ini              # Pytest configuration with coverage settings
 │   ├── routers/
 │   │   ├── calculator.py       # POST /calculate
 │   │   ├── products.py         # GET /products?query=<text>
@@ -52,23 +55,44 @@ mindhive-chatbot/
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── ChatWindow.jsx
-│   │   │   ├── MessageList.jsx
-│   │   │   ├── MessageBubble.jsx
-│   │   │   ├── InputComposer.jsx
-│   │   │   └── QuickActions.jsx
+│   │   │   ├── ChatWindow.tsx
+│   │   │   ├── MessageList.tsx
+│   │   │   ├── MessageBubble.tsx
+│   │   │   ├── InputComposer.tsx
+│   │   │   ├── QuickActions.tsx
+│   │   │   ├── ToolCallCard.tsx  # Expandable tool call visualization
+│   │   │   ├── BackendStatus.tsx  # Health check status indicator
+│   │   │   ├── ErrorBoundary.tsx # Error boundary wrapper
+│   │   │   └── ui/               # shadcn/ui components
+│   │   │       ├── button.tsx
+│   │   │       ├── card.tsx
+│   │   │       ├── input.tsx
+│   │   │       ├── textarea.tsx
+│   │   │       └── alert.tsx
 │   │   ├── hooks/
-│   │   │   └── useChat.js      # Chat state management
+│   │   │   └── useChat.ts       # Chat state management
 │   │   ├── services/
-│   │   │   └── api.js          # Backend API calls
+│   │   │   └── api.ts           # Backend API calls with TypeScript types
 │   │   ├── utils/
-│   │   │   └── localStorage.js # Persistence helper
-│   │   ├── App.jsx
-│   │   └── main.jsx
+│   │   │   └── localStorage.ts  # Persistence helper
+│   │   ├── lib/
+│   │   │   └── utils.ts         # Utility functions (cn for className merging)
+│   │   ├── test/
+│   │   │   └── setup.ts         # Vitest setup with testing-library
+│   │   ├── App.tsx
+│   │   └── main.tsx
 │   ├── package.json
-│   └── vite.config.js
+│   ├── Dockerfile               # Frontend containerization
+│   ├── vite.config.ts
+│   ├── vitest.config.ts         # Vitest configuration
+│   ├── eslint.config.js         # ESLint configuration
+│   ├── postcss.config.js        # PostCSS configuration
+│   ├── tailwind.config.js       # Tailwind with dark mode and animations
+│   ├── tsconfig.json            # TypeScript configuration
+│   ├── tsconfig.app.json        # TypeScript app config
+│   └── tsconfig.node.json       # TypeScript node config
 ├── README.md
-└── docker-compose.yml
+└── docker-compose.yml           # Full stack Docker setup with health checks
 ```
 
 ## Code Style & Conventions
@@ -84,15 +108,17 @@ mindhive-chatbot/
 - Max line length: 100 characters
 - Docstrings: Google style for all public functions
 
-### JavaScript (Frontend)
+### TypeScript (Frontend)
 
+- **TypeScript is required** - All frontend code uses TypeScript (.tsx, .ts)
 - Functional components with hooks only (no class components)
-- TypeScript optional but JSDoc comments required for complex functions
+- Type definitions for all API responses and component props
 - Naming: camelCase for functions/variables, PascalCase for components
-- Props: Destructure in function signature
+- Props: Destructure in function signature with TypeScript interfaces
 - State: Use useState for local, context for global
-- API calls: Centralize in `services/api.js`
+- API calls: Centralize in `services/api.ts` with typed interfaces
 - Error boundaries: Wrap main app and chat components
+- Utility functions: Use `lib/utils.ts` for className merging (cn function)
 
 ### Git Commits
 
@@ -110,6 +136,8 @@ mindhive-chatbot/
 
    - Install: `fastapi uvicorn langchain openai faiss-cpu sqlalchemy pydantic`
    - Create `.env` with `OPENAI_API_KEY=xxx` or `ANTHROPIC_API_KEY=xxx`
+   - Configure CORS middleware for frontend integration
+   - Add global exception handler for structured error responses
    - Test server: `uvicorn main:app --reload`
 
 2. **Build Calculator API**
@@ -137,11 +165,22 @@ mindhive-chatbot/
    - Error: Empty query returns 400, no results returns empty list
 
 5. **Outlets Text2SQL Endpoint**
+
    - Endpoint: `GET /outlets?query=outlets in petaling jaya`
    - Use LangChain `SQLDatabaseChain` or custom prompt
    - Sanitize: Whitelist SELECT, block DROP/DELETE/UPDATE
    - Execute query, return JSON results
    - Error: Log SQL injection attempts, return sanitized error
+
+6. **Health Check Endpoint**
+
+   - Endpoint: `GET /health` for deployment monitoring
+   - Returns: `{"status": "healthy", "service": "mindhive-chatbot"}`
+   - Used by Docker health checks and frontend status indicator
+
+7. **Root Endpoint**
+   - Endpoint: `GET /` for API information
+   - Returns: `{"message": "Mindhive AI Chatbot API", "status": "running"}`
 
 ### Phase 2: Agent Core
 
@@ -168,9 +207,7 @@ mindhive-chatbot/
 
 3. **Tool Integration**
 
-   - Wrapper functions for each API with timeout (3s)
-   - Retry logic: 1 retry on 500 error
-   - Circuit breaker: After 3 failures, return cached "service unavailable"
+   - Wrapper functions for each API with error handling
 
 4. **Unhappy Flow Handling**
    - Missing params: Ask clarifying question ("What would you like to calculate?")
@@ -181,22 +218,35 @@ mindhive-chatbot/
 
 1. **React Setup**
 
-   - `npm create vite@latest frontend -- --template react`
-   - Install: `tailwindcss lucide-react`
-   - Configure Tailwind in `tailwind.config.js`
+   - `npm create vite@latest frontend -- --template react-ts` (TypeScript template)
+   - Install: `tailwindcss lucide-react @radix-ui/react-slot clsx tailwind-merge class-variance-authority tailwindcss-animate`
+   - Install testing: `vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom`
+   - Configure Tailwind in `tailwind.config.js` with dark mode and animations
+   - Configure Vitest in `vitest.config.ts` with jsdom environment
+   - Setup test utilities in `src/test/setup.ts`
+   - Configure ESLint in `eslint.config.js`
+   - Configure PostCSS in `postcss.config.js`
 
 2. **Chat Components**
 
+   - `ChatWindow`: Main chat container with ErrorBoundary wrapper
    - `MessageBubble`: Avatar, timestamp, message content, loading indicator
    - `InputComposer`: Multiline textarea, Enter to send, Shift+Enter for newline
    - `QuickActions`: Dropdown for `/calc`, `/products`, `/outlets`, `/reset`
-   - `MessageList`: Auto-scroll to bottom, virtualized for performance
+   - `MessageList`: Auto-scroll to bottom
+   - `ToolCallCard`: Expandable card showing tool calls with input/output, success/error states
+   - `BackendStatus`: Health check indicator with periodic polling (30s interval)
+   - `ErrorBoundary`: Catches React errors and displays fallback UI
+   - **UI Components** (shadcn/ui): `Button`, `Card`, `Input`, `Textarea`, `Alert` - Radix UI based
 
 3. **API Integration**
 
-   - `api.js`: Single function `sendMessage(content, history)`
-   - Calls backend `/chat` endpoint
-   - Handles errors gracefully, shows toast notifications
+   - `api.ts`: TypeScript service with typed interfaces
+   - Functions: `sendMessage()`, `calculate()`, `searchProducts()`, `searchOutlets()`, `checkHealth()`
+   - Calls backend endpoints: `/chat`, `/calculate`, `/products`, `/outlets`, `/health`
+   - Environment variable: `VITE_API_URL` (defaults to `http://localhost:8000`)
+   - Handles errors gracefully with typed error responses
+   - All functions return typed Promise responses
 
 4. **Persistence**
 
@@ -205,34 +255,45 @@ mindhive-chatbot/
    - Format: `[{role: 'user'|'bot', content: string, timestamp: ISO8601}]`
 
 5. **Agent Visualization**
+
    - Show loading states: "🔍 Searching products..." "🧮 Calculating..."
-   - Display tool calls as expandable cards
-   - Highlight errors in red, success in green
+   - Display tool calls as expandable cards via `ToolCallCard` component
+   - Highlight errors in red, success in green with color-coded borders
+   - Show tool icons (Calculator, ShoppingBag, MapPin) and status badges
+   - Expandable JSON view of tool inputs and outputs
+
+6. **Backend Status Monitoring**
+   - `BackendStatus` component polls `/health` endpoint every 30 seconds
+   - Visual indicator (green checkmark/red X) with connection status
+   - Responsive: hides text on small screens, shows icon only
 
 ### Phase 4: Testing & Documentation
 
 1. **Backend Tests**
 
-   - pytest for all endpoints
+   - pytest for all endpoints (configured in `pytest.ini`)
+   - Coverage configuration: pytest-cov with 80% threshold
+   - Coverage reports: term-missing, html, xml
    - Mock external APIs (LLM, embeddings)
    - Test unhappy paths: missing params, timeouts, malicious input
    - Coverage target: >80%
+   - Run tests: `pytest tests/ -v` or `pytest --cov=. --cov-report=html`
 
 2. **Frontend Tests**
 
-   - Jest/Vitest for components
+   - Vitest for components (configured in `vitest.config.ts`)
+   - Testing Library: `@testing-library/react`, `@testing-library/jest-dom`, `@testing-library/user-event`
+   - Test setup: `src/test/setup.ts` with cleanup after each test
    - Test user interactions: sending messages, quick actions, persistence
-   - Snapshot tests for UI consistency
+   - Component tests: `InputComposer.test.tsx`, `MessageBubble.test.tsx`
+   - Snapshot tests for UI consistency (5 snapshots)
+   - Coverage configuration: v8 provider with 80% thresholds (lines, functions, branches, statements)
+   - Coverage reports: text, json, html
+   - Test scripts: `npm test`, `npm run test:ui`, `npm run test:coverage`
 
-3. **Integration Tests**
-
-   - End-to-end flows with Playwright
-   - Test: Multi-turn conversation, tool calling, error recovery
-
-4. **Documentation**
-   - README: Setup instructions, architecture diagram, trade-offs
+3. **Documentation**
+   - README: Setup instructions, trade-offs
    - API docs: FastAPI auto-generates at `/docs`
-   - Example transcripts: 5+ flows covering happy and unhappy paths
 
 ## Critical Rules
 
@@ -242,26 +303,20 @@ mindhive-chatbot/
 - **ALWAYS** sanitize SQL queries (parameterized queries only)
 - **NEVER** expose API keys in frontend code
 - **ALWAYS** validate input on backend (Pydantic models)
-- **ALWAYS** rate limit endpoints (10 req/min per IP)
 
 ### Performance
 
 - **ALWAYS** use async/await for I/O operations
-- **CACHE** embeddings and LLM responses where possible
-- **TIMEOUT** all external calls (3s max)
-- **LAZY LOAD** chat history (only last 50 messages in UI)
 
 ### Error Handling
 
 - **NEVER** crash on user input, always return structured error
-- **ALWAYS** log errors with context (user_id, timestamp, input)
-- **ALWAYS** provide recovery path ("Try asking another way")
+- **ALWAYS** log errors with context (timestamp, input)
 - **NEVER** expose internal errors to user (sanitize stack traces)
 
 ### Memory Management
 
 - **ALWAYS** include conversation history in context window
-- **TRUNCATE** history if exceeds token limit (keep last 10 turns)
 - **RESET** memory on `/reset` command
 - **PERSIST** memory across page refreshes (localStorage)
 
@@ -272,15 +327,16 @@ mindhive-chatbot/
 - [ ] Outlets: Valid query, SQL injection attempt, API down
 - [ ] Agent: Multi-turn context, slot filling, action selection
 - [ ] Frontend: Message send, persistence, quick actions, error display
-- [ ] Integration: Full flow from user input to response
 
 ## Deployment Checklist
 
-- [ ] Environment variables in .env.example (no secrets committed)
-- [ ] Docker Compose for local development
+- [ ] Docker Compose for local development with health checks
+- [ ] Backend Dockerfile with health check configuration
+- [ ] Frontend Dockerfile for containerization
 - [ ] Backend deployed to Railway/Render with health check endpoint
-- [ ] Frontend deployed to Vercel with API_URL env variable
+- [ ] Frontend deployed to Vercel with `VITE_API_URL` env variable
 - [ ] README has live demo link and setup instructions
+- [ ] Backend README.md with API documentation
 - [ ] All tests passing in CI/CD pipeline
 
 ## Common Pitfalls to Avoid
@@ -292,7 +348,7 @@ mindhive-chatbot/
 5. **Not persisting chat**: Users expect history to survive refresh
 6. **Ignoring SQL injection**: Always use parameterized queries
 7. **No loading indicators**: Users need feedback during async operations
-8. **Not handling token limits**: Truncate history if context too large
+8. **Not handling large conversations**: Keep conversation history manageable
 
 ## Resources
 
@@ -321,6 +377,18 @@ Track key architectural decisions here:
 **Why localStorage over session storage?**
 
 - Persists across tabs/windows, better UX for returning users
+
+**Why TypeScript over JavaScript?**
+
+- Type safety catches errors at compile time, better IDE support, self-documenting code
+
+**Why shadcn/ui over other component libraries?**
+
+- Radix UI primitives for accessibility, Tailwind CSS for styling, copy-paste components (no npm dependency bloat)
+
+**Why Vitest over Jest?**
+
+- Faster, better ESM support, Vite-native, compatible with Jest API
 
 ---
 
@@ -360,4 +428,20 @@ cd frontend && npm test
 
 ```bash
 docker-compose up
+```
+
+**Docker Commands:**
+
+```bash
+# Build and run with Docker Compose
+docker-compose up --build
+
+# Run in detached mode
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
 ```

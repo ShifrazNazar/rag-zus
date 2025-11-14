@@ -76,6 +76,7 @@ export default function InputComposer({
           disabled={!message.trim() || disabled}
           size="icon"
           className="h-[52px] w-[52px]"
+          aria-label="Send message"
         >
           <Send className="h-4 w-4" />
         </Button>
