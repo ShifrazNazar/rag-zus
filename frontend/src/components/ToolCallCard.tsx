@@ -40,14 +40,14 @@ export default function ToolCallCard({ toolCall }: ToolCallCardProps) {
   return (
     <Card
       className={cn(
-        "mb-2 border-l-4",
+        "mb-2 border-l-4 shadow-sm",
         isSuccess
-          ? "border-l-green-500 bg-green-50 dark:bg-green-950/20"
-          : "border-l-red-500 bg-red-50 dark:bg-red-950/20"
+          ? "border-l-primary bg-primary/5 dark:bg-primary/10"
+          : "border-l-destructive bg-destructive/5 dark:bg-destructive/10"
       )}
     >
       <CardHeader
-        className="pb-2 cursor-pointer"
+        className="pb-2 cursor-pointer hover:bg-accent/30 transition-colors rounded-t-lg"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center justify-between">
@@ -56,33 +56,33 @@ export default function ToolCallCard({ toolCall }: ToolCallCardProps) {
             <CardTitle className="text-sm font-medium">{label}</CardTitle>
             <span
               className={cn(
-                "text-xs px-2 py-0.5 rounded",
+                "text-xs px-2 py-0.5 rounded-md font-medium",
                 isSuccess
-                  ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                  : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                  ? "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary-foreground"
+                  : "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive-foreground"
               )}
             >
               {isSuccess ? "Success" : "Error"}
             </span>
           </div>
           {isExpanded ? (
-            <ChevronUp className="h-4 w-4" />
+            <ChevronUp className="h-4 w-4 text-muted-foreground" />
           ) : (
-            <ChevronDown className="h-4 w-4" />
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
           )}
         </div>
       </CardHeader>
       {isExpanded && (
-        <CardContent className="pt-0 space-y-2">
+        <CardContent className="pt-0 space-y-3">
           <div>
-            <p className="text-xs font-medium text-muted-foreground mb-1">Input:</p>
-            <pre className="text-xs bg-muted p-2 rounded overflow-auto">
+            <p className="text-xs font-medium text-muted-foreground mb-1.5">Input:</p>
+            <pre className="text-xs bg-muted/50 border border-border/60 p-2.5 rounded-lg overflow-auto font-mono">
               {JSON.stringify(input, null, 2)}
             </pre>
           </div>
           <div>
-            <p className="text-xs font-medium text-muted-foreground mb-1">Output:</p>
-            <pre className="text-xs bg-muted p-2 rounded overflow-auto">
+            <p className="text-xs font-medium text-muted-foreground mb-1.5">Output:</p>
+            <pre className="text-xs bg-muted/50 border border-border/60 p-2.5 rounded-lg overflow-auto font-mono">
               {JSON.stringify(output, null, 2)}
             </pre>
           </div>

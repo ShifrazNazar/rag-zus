@@ -17,8 +17,14 @@ export default function MessageList({ messages, isLoading }: MessageListProps) {
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 min-h-0">
       {messages.length === 0 ? (
-        <div className="flex items-center justify-center h-full text-muted-foreground">
-          <p>Start a conversation...</p>
+        <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+          <div className="mb-4 opacity-40">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center transform rotate-[-55deg]">
+              <span className="text-primary/30 font-bold text-3xl">Z</span>
+            </div>
+          </div>
+          <p className="text-base">Start a conversation...</p>
+          <p className="text-sm mt-1 opacity-70">Ask about outlets, products, or calculations</p>
         </div>
       ) : (
         <>
@@ -29,15 +35,15 @@ export default function MessageList({ messages, isLoading }: MessageListProps) {
           </div>
           {isLoading && (
             <div className="flex justify-start mb-4">
-              <div className="bg-card border rounded-lg px-4 py-3">
+              <div className="bg-card border border-border/60 rounded-xl px-4 py-3 shadow-sm">
                 <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"></div>
                   <div
-                    className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce"
+                    className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"
                     style={{ animationDelay: "0.15s" }}
                   ></div>
                   <div
-                    className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce"
+                    className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"
                     style={{ animationDelay: "0.3s" }}
                   ></div>
                 </div>

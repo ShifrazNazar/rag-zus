@@ -49,17 +49,17 @@ export default function InputComposer({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type your message..."
+            placeholder="Ask about outlets, products, or calculations..."
             disabled={disabled}
             rows={1}
-            className="resize-none min-h-[52px] max-h-[120px]"
+            className="resize-none min-h-[52px] max-h-[120px] border-border/60 focus:border-primary/50 focus:ring-primary/20"
           />
           {showAutocomplete && filteredActions.length > 0 && (
-            <div className="absolute bottom-full left-0 right-0 mb-2 bg-popover border rounded-lg shadow-lg z-10">
+            <div className="absolute bottom-full left-0 right-0 mb-2 bg-popover border border-border/60 rounded-xl shadow-lg z-10 overflow-hidden">
               {filteredActions.map((action) => (
                 <div
                   key={action}
-                  className="px-3 py-2 cursor-pointer text-sm hover:bg-muted"
+                  className="px-3 py-2 cursor-pointer text-sm hover:bg-accent/50 transition-colors"
                   onClick={() => {
                     setMessage(action + " ");
                     textareaRef.current?.focus();

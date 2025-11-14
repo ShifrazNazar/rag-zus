@@ -22,7 +22,7 @@ export default function BackendStatus() {
   return (
     <div
       className={`flex items-center gap-2 text-xs ${
-        isConnected ? "text-green-600" : "text-red-600"
+        isConnected ? "text-primary" : "text-destructive"
       }`}
     >
       {isConnected ? (

@@ -22,24 +22,32 @@ export default function ChatWindow() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
-      <div className="border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-[#F5F1EB] via-background to-[#F0E8DC]">
+      <div className="border-b border-border/40 bg-gradient-to-r from-[#F5F1EB] to-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 py-5">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight">
-                Mindhive AI Chatbot
-              </h1>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                Multi-agent chatbot with RAG, Text2SQL, and tool calling
-              </p>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full"></div>
+                <div className="relative w-10 h-10 bg-primary rounded-lg flex items-center justify-center transform rotate-[-55deg]">
+                  <span className="text-primary-foreground font-bold text-xl">Z</span>
+                </div>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  ZUS Coffee Assistant
+                </h1>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Your personal coffee shop guide • Find outlets, products & more
+                </p>
+              </div>
             </div>
             <BackendStatus />
           </div>
         </div>
       </div>
 
-      <div className="border-b border-border/50 bg-muted/30">
+      <div className="border-b border-border/40 bg-gradient-to-r from-accent/30 via-muted/20 to-accent/30">
         <div className="max-w-4xl mx-auto px-4">
           <QuickActions onAction={handleSend} disabled={isLoading} />
         </div>
@@ -71,7 +79,7 @@ export default function ChatWindow() {
         </div>
       </div>
 
-      <div className="border-t border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="border-t border-border/40 bg-gradient-to-r from-background/95 via-[#F5F1EB]/90 to-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-lg">
         <div className="max-w-4xl mx-auto">
           <InputComposer onSend={handleSend} disabled={isLoading} />
         </div>

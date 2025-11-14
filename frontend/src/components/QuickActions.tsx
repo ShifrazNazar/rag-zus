@@ -26,7 +26,7 @@ export default function QuickActions({ onAction, disabled = false }: QuickAction
               disabled={disabled}
               variant="outline"
               size="sm"
-              className="gap-2"
+              className="gap-2 border-border/60 hover:bg-accent/50 hover:border-primary/30 transition-all"
             >
               <Icon className="h-4 w-4" />
               <span>{item.label}</span>
