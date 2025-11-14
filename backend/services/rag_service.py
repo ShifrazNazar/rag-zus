@@ -36,13 +36,7 @@ class RAGService:
         self.index_dir.mkdir(parents=True, exist_ok=True)
         self.products_dir.mkdir(parents=True, exist_ok=True)
         
-        self._initialized = False
-    
-    def _ensure_initialized(self) -> None:
-        if self._initialized:
-            return
         self._initialize()
-        self._initialized = True
     
     def _initialize(self) -> None:
         if SentenceTransformer is None:
@@ -208,8 +202,6 @@ class RAGService:
             logger.error(f"Error saving index: {e}", exc_info=True)
     
     def search(self, query: str, top_k: int = 10) -> List[Dict[str, Any]]:
-        self._ensure_initialized()
-        
         if self.encoder is None or self.index is None:
             logger.warning("RAG service not properly initialized")
             return []
@@ -268,7 +260,6 @@ class RAGService:
     
     def rebuild_index(self) -> None:
         logger.info("Rebuilding FAISS index")
-        self._ensure_initialized()
         self._build_index()
 
 
