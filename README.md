@@ -10,8 +10,8 @@ Multi-agent chatbot with RAG, Text2SQL, tool calling, and custom React frontend.
 - ✅ **209 outlets** in SQLite database
 
 ## Live
-FE: https://rag-zus.vercel.app
-BE: https://rag-zus.onrender.com
+- FE: https://rag-zus.vercel.app
+- BE: https://rag-zus.onrender.com/docs
 
 ## 🚀 Quick Start
 
