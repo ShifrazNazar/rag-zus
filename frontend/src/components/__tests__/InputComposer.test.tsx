@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import InputComposer from "../InputComposer";
 
@@ -8,7 +8,7 @@ describe("InputComposer", () => {
     const onSend = vi.fn();
     render(<InputComposer onSend={onSend} />);
     expect(
-      screen.getByPlaceholderText(/type your message/i)
+      screen.getByPlaceholderText(/ask about outlets/i)
     ).toBeInTheDocument();
   });
 
@@ -17,8 +17,8 @@ describe("InputComposer", () => {
     const onSend = vi.fn();
     render(<InputComposer onSend={onSend} />);
 
-    const input = screen.getByPlaceholderText(/type your message/i);
-    const sendButton = screen.getByRole("button", { name: /send/i });
+    const input = screen.getByPlaceholderText(/ask about outlets/i);
+    const sendButton = screen.getByRole("button", { name: /send message/i });
 
     await user.type(input, "Hello");
     await user.click(sendButton);
@@ -31,7 +31,7 @@ describe("InputComposer", () => {
     const onSend = vi.fn();
     render(<InputComposer onSend={onSend} />);
 
-    const input = screen.getByPlaceholderText(/type your message/i);
+    const input = screen.getByPlaceholderText(/ask about outlets/i);
     await user.type(input, "Test message{Enter}");
 
     expect(onSend).toHaveBeenCalledWith("Test message");
@@ -42,7 +42,7 @@ describe("InputComposer", () => {
     const onSend = vi.fn();
     render(<InputComposer onSend={onSend} />);
 
-    const sendButton = screen.getByRole("button", { name: /send/i });
+    const sendButton = screen.getByRole("button", { name: /send message/i });
     await user.click(sendButton);
 
     expect(onSend).not.toHaveBeenCalled();
@@ -52,7 +52,7 @@ describe("InputComposer", () => {
     const onSend = vi.fn();
     render(<InputComposer onSend={onSend} disabled={true} />);
 
-    const input = screen.getByPlaceholderText(/type your message/i);
+    const input = screen.getByPlaceholderText(/ask about outlets/i);
     expect(input).toBeDisabled();
   });
 

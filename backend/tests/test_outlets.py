@@ -82,3 +82,73 @@ def test_outlets_search_long_query():
     response = client.get(f"/outlets?query={long_query}")
     assert response.status_code in [200, 400, 422, 500]
 
+
+def test_outlets_sql_injection_comprehensive():
+    """Test Part 5: Comprehensive SQL injection attempts"""
+    injection_queries = [
+        "'; DROP TABLE outlets; --",
+        "' OR '1'='1",
+        "'; DELETE FROM outlets; --",
+        "1' OR '1'='1",
+        "admin'--",
+        "' UNION SELECT * FROM outlets--",
+        "'; INSERT INTO outlets VALUES (999, 'hack', 'hack'); --",
+        "1; DROP TABLE outlets;",
+        "' OR 1=1--",
+        "'; UPDATE outlets SET name='hacked'; --",
+    ]
+    
+    for query in injection_queries:
+        response = client.get(f"/outlets?query={query}")
+        assert response.status_code in [200, 400, 500]
+        if response.status_code == 200:
+            data = response.json()
+            assert isinstance(data["results"], list)
+            assert "sql_query" in data
+
+
+def test_outlets_missing_parameters():
+    """Test Part 5: Missing parameters handling"""
+    response = client.get("/outlets")
+    assert response.status_code == 422
+
+
+def test_outlets_error_handling_never_crashes():
+    """Test Part 5: Bot never crashes on malicious payloads"""
+    malicious_inputs = [
+        "'; DROP TABLE outlets; --",
+        "<script>alert('xss')</script>",
+        "../../etc/passwd",
+        "null",
+        "",
+    ]
+    
+    for malicious_input in malicious_inputs:
+        try:
+            response = client.get(f"/outlets?query={malicious_input}")
+            assert response.status_code in [200, 400, 422, 500]
+            if response.status_code == 200:
+                data = response.json()
+                assert isinstance(data, dict)
+        except Exception as e:
+            pytest.fail(f"Outlets endpoint crashed on input '{malicious_input}': {e}")
+
+
+def test_outlets_response_structure_always_valid():
+    """Test that outlets endpoint always returns valid structure"""
+    test_queries = [
+        "petaling jaya",
+        "kuala lumpur",
+        "all outlets",
+        "nonexistent location xyz",
+    ]
+    
+    for query in test_queries:
+        response = client.get(f"/outlets?query={query}")
+        if response.status_code == 200:
+            data = response.json()
+            assert "results" in data
+            assert "sql_query" in data
+            assert isinstance(data["results"], list)
+            assert isinstance(data["sql_query"], (str, type(None)))
+

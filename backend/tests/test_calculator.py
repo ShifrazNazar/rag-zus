@@ -224,3 +224,64 @@ def test_calculate_with_whitespace():
     assert data["result"] == 5.0
     assert data["error"] is None
 
+
+def test_calculate_missing_operands():
+    """Test Part 5: Missing parameters - Calculate with no operands"""
+    response = client.post(
+        "/calculate",
+        json={"expression": "+"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["result"] is None
+    assert data["error"] is not None
+
+
+def test_calculate_incomplete_expression():
+    """Test Part 5: Missing parameters - Incomplete expression"""
+    response = client.post(
+        "/calculate",
+        json={"expression": "2 +"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["result"] is None
+    assert data["error"] is not None
+
+
+def test_calculate_error_message_clarity():
+    """Test Part 5: Clear error messages"""
+    response = client.post(
+        "/calculate",
+        json={"expression": "10 / 0"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["result"] is None
+    assert data["error"] is not None
+    assert "division" in data["error"].lower() or "zero" in data["error"].lower()
+
+
+def test_calculate_never_crashes():
+    """Test Part 5: Bot never crashes on invalid input"""
+    invalid_inputs = [
+        "hello world",
+        "DROP TABLE users;",
+        "import os; os.system('rm -rf /')",
+        "eval('malicious code')",
+        None,
+    ]
+    
+    for invalid_input in invalid_inputs:
+        try:
+            if invalid_input is None:
+                response = client.post("/calculate", json={})
+            else:
+                response = client.post("/calculate", json={"expression": invalid_input})
+            assert response.status_code in [200, 422]
+            if response.status_code == 200:
+                data = response.json()
+                assert "result" in data or "error" in data
+        except Exception as e:
+            pytest.fail(f"Calculator crashed on input '{invalid_input}': {e}")
+
